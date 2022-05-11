@@ -44,7 +44,11 @@ devDependencies:
   '@typechain/hardhat': 2.3.1_arebner7dfz333jqouc33z2vh4
   '@types/chai': 4.3.1
   '@types/mocha': 9.1.1
+<<<<<<< HEAD
   '@types/node': 12.20.50
+=======
+  '@types/node': 12.20.51
+>>>>>>> origin/main
   '@typescript-eslint/eslint-plugin': 4.33.0_lzzr7k3tjtqil7aczuhmzzwame
   '@typescript-eslint/parser': 4.33.0_e4zyhrvfnqudwdx5bevnvkluy4
   '@uniswap/v2-core': 1.0.1
@@ -66,7 +70,11 @@ devDependencies:
   prettier-plugin-solidity: 1.0.0-beta.19_prettier@2.6.2
   solhint: 3.3.7
   solidity-coverage: 0.7.21
+<<<<<<< HEAD
   ts-node: 10.7.0_3wjt2zwv2dlvyy743xkk2n2efq
+=======
+  ts-node: 10.7.0_azdrrf4jjxrqmzh6vuo6kebvyu
+>>>>>>> origin/main
   typechain: 5.2.0_typescript@4.6.4
   typescript: 4.6.4
 
@@ -275,7 +283,7 @@ packages:
       '@ethereumjs/common': 2.6.4
       '@ethereumjs/tx': 3.5.1
       async-eventemitter: 0.2.4
-      core-js-pure: 3.22.4
+      core-js-pure: 3.22.5
       debug: 4.3.4
       ethereumjs-util: 7.1.4
       functional-red-black-tree: 1.0.1
@@ -970,13 +978,13 @@ packages:
   /@types/bn.js/4.11.6:
     resolution: {integrity: sha512-pqr857jrp2kPuO9uRjZ3PwnJTjoQy+fcdxvBTvHm6dkmEL9q+hDD/2j/0ELOBPtPnS8LjCX0gI9nbl8lVkadpg==}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
     dev: true
 
   /@types/bn.js/5.1.0:
     resolution: {integrity: sha512-QSSVYj7pYFN49kW77o2s9xTCwZ8F2xLbjLLSEVh8D2F4JUhZtPAGOFLTD+ffqksBx/u4cE/KImFjyhqCjn/LIA==}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
     dev: true
 
   /@types/chai/4.3.1:
@@ -986,20 +994,20 @@ packages:
   /@types/concat-stream/1.6.1:
     resolution: {integrity: sha512-eHE4cQPoj6ngxBZMvVf6Hw7Mh4jMW4U9lpGmS5GBPB9RYxlFg+CHaVN7ErNY4W9XfLIEn20b4VDYaIrbq0q4uA==}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
     dev: true
 
   /@types/form-data/0.0.33:
     resolution: {integrity: sha1-yayFsqX9GENbjIXZ7LUObWyJP/g=}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
     dev: true
 
   /@types/glob/7.2.0:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 3.0.5
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
     dev: true
 
   /@types/json-schema/7.0.11:
@@ -1013,7 +1021,11 @@ packages:
   /@types/keyv/3.1.4:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
+<<<<<<< HEAD
       '@types/node': 12.20.50
+=======
+      '@types/node': 12.20.51
+>>>>>>> origin/main
     dev: true
 
   /@types/level-errors/3.0.0:
@@ -1025,7 +1037,7 @@ packages:
     dependencies:
       '@types/abstract-leveldown': 7.2.0
       '@types/level-errors': 3.0.0
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
     dev: true
 
   /@types/lru-cache/5.1.1:
@@ -1039,7 +1051,7 @@ packages:
   /@types/mkdirp/0.5.2:
     resolution: {integrity: sha512-U5icWpv7YnZYGsN4/cmh3WD2onMY0aJIiTE6+51TwJCttdHvtCYmkBNOobHlXwrJRL0nkH9jH4kD+1FAdMN4Tg==}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
     dev: true
 
   /@types/mocha/9.1.1:
@@ -1049,7 +1061,7 @@ packages:
   /@types/node-fetch/2.6.1:
     resolution: {integrity: sha512-oMqjURCaxoSIsHSr1E47QHzbmzNR5rK8McHuNb11BOM9cHcIK3Avy0s/b2JlXHoQGTYS3NsvWzV1M0iK7l0wbA==}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
       form-data: 3.0.1
     dev: true
 
@@ -1057,8 +1069,8 @@ packages:
     resolution: {integrity: sha512-F0KIgDJfy2nA3zMLmWGKxcH2ZVEtCZXHHdOQs2gSaQ27+lNeEfGxzkIw90aXswATX7AZ33tahPbzy6KAfUreVw==}
     dev: true
 
-  /@types/node/12.20.50:
-    resolution: {integrity: sha512-+9axpWx2b2JCVovr7Ilgt96uc6C1zBKOQMpGtRbWT9IoR/8ue32GGMfGA4woP8QyP2gBs6GQWEVM3tCybGCxDA==}
+  /@types/node/12.20.51:
+    resolution: {integrity: sha512-anVDMfReTatfH8GVmHmaTZOL0jeTLNZ9wK9SSrQS3tMmn4vUc+9fVWlUzAieuQefWDyWUz4Z3aqXxDgO1VsYjg==}
     dev: true
 
   /@types/node/8.10.66:
@@ -1068,7 +1080,7 @@ packages:
   /@types/pbkdf2/3.1.0:
     resolution: {integrity: sha512-Cf63Rv7jCQ0LaL8tNXmEyqTHuIJxRdlS5vMh1mj5voN4+QFhVZnlZruezqpWYDiJ8UTzhP0VmeLXCmBk66YrMQ==}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
     dev: true
 
   /@types/prettier/2.6.0:
@@ -1082,7 +1094,13 @@ packages:
   /@types/resolve/0.0.8:
     resolution: {integrity: sha512-auApPaJf3NPfe18hSoJkp8EbZzer2ISk7o8mCC3M9he/a04+gbMF97NkpD2S8riMGvm4BMRI59/SZQSaLTKpsQ==}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
+    dev: true
+
+  /@types/responselike/1.0.0:
+    resolution: {integrity: sha512-85Y2BjiufFzaMIlvJDvTTB8Fxl2xfLo4HgmHzVBz08w4wDePCTjYw66PdrolO0kzli3yam/YCgRufyo1DdQVTA==}
+    dependencies:
+      '@types/node': 12.20.51
     dev: true
 
   /@types/responselike/1.0.0:
@@ -1094,7 +1112,7 @@ packages:
   /@types/secp256k1/4.0.3:
     resolution: {integrity: sha512-Da66lEIFeIz9ltsdMZcpQvmrmmoqrfju8pm1BH8WbYjZSwUgCwXLb9C+9XYogwBITnbsSaMdVPb2ekf7TV+03w==}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
     dev: true
 
   /@types/sinon-chai/3.2.8:
@@ -2403,7 +2421,7 @@ packages:
     resolution: {integrity: sha512-WHVocJYavUwVgVViC0ORikPHQquXwVh939TaelZ4WDqpWgTX/FsGhl/+P4qBUAGcRvtOgDgC+xftNWWp2RUTAQ==}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001338
+      caniuse-lite: 1.0.30001339
       electron-to-chromium: 1.4.137
     dev: true
 
@@ -2553,8 +2571,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /caniuse-lite/1.0.30001338:
-    resolution: {integrity: sha512-1gLHWyfVoRDsHieO+CaeYe7jSo/MT7D7lhaXUiwwbuR5BwQxORs0f1tAwUSQr3YbxRXJvxHM/PA5FfPQRnsPeQ==}
+  /caniuse-lite/1.0.30001339:
+    resolution: {integrity: sha512-Es8PiVqCe+uXdms0Gu5xP5PF2bxLR7OBp3wUzUnuO7OHzhOfCyg3hdiGWVPVxhiuniOzng+hTc1u3fEQ0TlkSQ==}
     dev: true
 
   /caseless/0.12.0:
@@ -2894,8 +2912,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /core-js-pure/3.22.4:
-    resolution: {integrity: sha512-4iF+QZkpzIz0prAFuepmxwJ2h5t4agvE8WPYqs2mjLJMNNwJOnpch76w2Q7bUfCPEv/V7wpvOfog0w273M+ZSw==}
+  /core-js-pure/3.22.5:
+    resolution: {integrity: sha512-8xo9R00iYD7TcV7OrC98GwxiUEAabVWO3dix+uyWjnYrx9fyASLlIX+f/3p5dW5qByaP2bcZ8X/T47s55et/tA==}
     requiresBuild: true
     dev: true
 
@@ -4245,7 +4263,7 @@ packages:
     dependencies:
       async: 2.6.2
       async-eventemitter: 0.2.4
-      core-js-pure: 3.22.4
+      core-js-pure: 3.22.5
       ethereumjs-account: 3.0.0
       ethereumjs-block: 2.2.2
       ethereumjs-blockchain: 4.0.4
@@ -4689,8 +4707,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /foreach/2.0.5:
-    resolution: {integrity: sha1-C+4AUBiusmDQo6865ljdATbsG5k=}
+  /foreach/2.0.6:
+    resolution: {integrity: sha512-k6GAGDyqLe9JaebCsFCoudPPWfihKu8pylYXRlqP1J7ms39iPoTtk2fviNglIeQEwdh0bQeKJ01ZPyuyQvKzwg==}
     dev: true
 
   /forever-agent/0.6.1:
@@ -5125,7 +5143,7 @@ packages:
       source-map: 0.6.1
       wordwrap: 1.0.0
     optionalDependencies:
-      uglify-js: 3.15.4
+      uglify-js: 3.15.5
     dev: true
 
   /har-schema/2.0.0:
@@ -5836,7 +5854,7 @@ packages:
       available-typed-arrays: 1.0.5
       call-bind: 1.0.2
       es-abstract: 1.20.0
-      foreach: 2.0.5
+      foreach: 2.0.6
       has-tostringtag: 1.0.0
     dev: true
 
@@ -9084,7 +9102,11 @@ packages:
       ts-essentials: 1.0.4
     dev: true
 
+<<<<<<< HEAD
   /ts-node/10.7.0_3wjt2zwv2dlvyy743xkk2n2efq:
+=======
+  /ts-node/10.7.0_azdrrf4jjxrqmzh6vuo6kebvyu:
+>>>>>>> origin/main
     resolution: {integrity: sha512-TbIGS4xgJoX2i3do417KSaep1uRAW/Lu+WAL2doDHC0D6ummjirVOXU5/7aiZotbQ5p1Zp9tP7U6cYhA0O7M8A==}
     hasBin: true
     peerDependencies:
@@ -9103,7 +9125,7 @@ packages:
       '@tsconfig/node12': 1.0.9
       '@tsconfig/node14': 1.0.1
       '@tsconfig/node16': 1.0.2
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
       acorn: 8.7.1
       acorn-walk: 8.2.0
       arg: 4.1.3
@@ -9281,8 +9303,8 @@ packages:
     resolution: {integrity: sha1-XAgOXWYcu+OCWdLnCjxyU+hziB0=}
     dev: true
 
-  /uglify-js/3.15.4:
-    resolution: {integrity: sha512-vMOPGDuvXecPs34V74qDKk4iJ/SN4vL3Ow/23ixafENYvtrNvtbcgUeugTcUGRGsOF/5fU8/NYSL5Hyb3l1OJA==}
+  /uglify-js/3.15.5:
+    resolution: {integrity: sha512-hNM5q5GbBRB5xB+PMqVRcgYe4c8jbyZ1pzZhS6jbq54/4F2gFK869ZheiE5A8/t+W5jtTNpWef/5Q9zk639FNQ==}
     engines: {node: '>=0.8.0'}
     hasBin: true
     requiresBuild: true
@@ -9497,7 +9519,7 @@ packages:
     resolution: {integrity: sha512-XGpWUEElGypBjeFyUhTkiPXFbDVD6Nr/S5jznE3t8cWUA0FxRf1n3n/NuIZeb0H9RkN2Ctd/jNma/k8XGa3YKg==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
       got: 9.6.0
       swarm-js: 0.1.40
       underscore: 1.9.1
@@ -9513,7 +9535,7 @@ packages:
     engines: {node: '>=8.0.0'}
     requiresBuild: true
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
       got: 9.6.0
       swarm-js: 0.1.40
     transitivePeerDependencies:
@@ -9630,7 +9652,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       '@types/bn.js': 4.11.6
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
       bignumber.js: 9.0.2
       web3-core-helpers: 1.2.11
       web3-core-method: 1.2.11
@@ -9646,7 +9668,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       '@types/bn.js': 4.11.6
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
       bignumber.js: 9.0.2
       web3-core-helpers: 1.5.3
       web3-core-method: 1.5.3
@@ -9802,7 +9824,7 @@ packages:
     resolution: {integrity: sha512-42IzUtKq9iHZ8K9VN0vAI50iSU9tOA1V7XU2BhF/tb7We2iKBVdkley2fg26TxlOcKNEHm7o6HRtiiFsVK4Ifw==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
       web3-core: 1.2.11
       web3-core-helpers: 1.2.11
       web3-core-method: 1.2.11
@@ -9817,7 +9839,7 @@ packages:
     resolution: {integrity: sha512-JzibJafR7ak/Icas8uvos3BmUNrZw1vShuNR5Cxjo+vteOC8XMqz1Vr7RH65B4bmlfb3bm9xLxetUHO894+Sew==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      '@types/node': 12.20.50
+      '@types/node': 12.20.51
       web3-core: 1.5.3
       web3-core-helpers: 1.5.3
       web3-core-method: 1.5.3
@@ -10153,7 +10175,7 @@ packages:
       available-typed-arrays: 1.0.5
       call-bind: 1.0.2
       es-abstract: 1.20.0
-      foreach: 2.0.5
+      foreach: 2.0.6
       has-tostringtag: 1.0.0
       is-typed-array: 1.1.8
     dev: true

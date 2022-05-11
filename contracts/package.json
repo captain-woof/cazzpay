@@ -19,7 +19,7 @@
   },
   "version": "1.0.0",
   "scripts": {
-    "typechain": "pnpx hardhat clean && pnpx hardhat compile"
+    "typechain": "npx hardhat clean && npx hardhat compile"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",

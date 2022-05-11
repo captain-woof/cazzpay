@@ -22,7 +22,17 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
-  solidity: "^0.8.12",
+  solidity: {
+    compilers: ["0.8.0", "0.8.12"].map((versionNum) => ({
+      version: versionNum,
+      settings: {
+        optimizer: {
+          enabled: true,
+          runs: 1000,
+        },
+      }
+    }))
+  },
   networks: {
     polygon: {
       url: "https://polygon-rpc.com/",
