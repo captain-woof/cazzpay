@@ -10,6 +10,7 @@
     "typechain": "cd ../contracts && npx hardhat clean && npx hardhat compile && find ./artifacts/contracts/ -maxdepth 5 -name '*.json' | grep -v \".dbg.json\" | xargs --replace={} cp \"{}\" ../client/contracts && cd ../client && cp -r ../contracts/typechain ./"
   },
   "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
     "next": "12.1.6",
     "react": "18.1.0",
     "react-dom": "18.1.0"
