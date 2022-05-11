@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typechain": "cd ../contracts && pnpx hardhat clean && pnpx hardhat compile && find ./artifacts/contracts/ -maxdepth 5 -name '*.json' | grep -v \".dbg.json\" | xargs --replace={} cp \"{}\" ../client/contracts && cd ../client && cp -r ../contracts/typechain-types ./"
+    "typechain": "cd ../contracts && npx hardhat clean && npx hardhat compile && find ./artifacts/contracts/ -maxdepth 5 -name '*.json' | grep -v \".dbg.json\" | xargs --replace={} cp \"{}\" ../client/contracts && cd ../client && cp -r ../contracts/typechain ./"
   },
   "dependencies": {
     "next": "12.1.6",
