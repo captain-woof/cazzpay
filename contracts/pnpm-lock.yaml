@@ -45,17 +45,29 @@ devDependencies:
   '@nomiclabs/hardhat-ethers': 2.0.5_ethers@5.6.5+hardhat@2.9.3
   '@nomiclabs/hardhat-etherscan': 3.0.3_hardhat@2.9.3
   '@nomiclabs/hardhat-waffle': 2.0.3_ialzm4xalh2kvx5dbnjvwfyk3a
+<<<<<<< HEAD
   '@openzeppelin/contracts': 3.4.2
   '@typechain/ethers-v5': 7.2.0_e674wvycsr2lyypt7eogaxoyjq
   '@typechain/hardhat': 2.3.1_arebner7dfz333jqouc33z2vh4
   '@types/bignumber.js': 5.0.0
+=======
+  '@openzeppelin/contracts': 4.6.0
+  '@typechain/ethers-v5': 7.2.0_e674wvycsr2lyypt7eogaxoyjq
+  '@typechain/hardhat': 2.3.1_arebner7dfz333jqouc33z2vh4
+>>>>>>> 73352f5 (created new branch)
   '@types/chai': 4.3.1
   '@types/chai-as-promised': 7.1.5
   '@types/mocha': 9.1.1
+<<<<<<< HEAD
   '@types/node': 12.20.51
   '@typescript-eslint/eslint-plugin': 4.33.0_lzzr7k3tjtqil7aczuhmzzwame
   '@typescript-eslint/parser': 4.33.0_e4zyhrvfnqudwdx5bevnvkluy4
   '@uniswap/lib': 4.0.1-alpha
+=======
+  '@types/node': 12.20.50
+  '@typescript-eslint/eslint-plugin': 4.33.0_lzzr7k3tjtqil7aczuhmzzwame
+  '@typescript-eslint/parser': 4.33.0_e4zyhrvfnqudwdx5bevnvkluy4
+>>>>>>> 73352f5 (created new branch)
   '@uniswap/v2-core': 1.0.1
   '@uniswap/v2-periphery': 1.1.0-beta.0
   bignumber.js: 9.0.2
@@ -78,7 +90,11 @@ devDependencies:
   redstone-evm-connector: 2.1.12_nzr5f36rsyamehddazgfu5lcku
   solhint: 3.3.7
   solidity-coverage: 0.7.21
+<<<<<<< HEAD
   ts-node: 10.7.0_azdrrf4jjxrqmzh6vuo6kebvyu
+=======
+  ts-node: 10.7.0_3wjt2zwv2dlvyy743xkk2n2efq
+>>>>>>> 73352f5 (created new branch)
   typechain: 5.2.0_typescript@4.6.4
   typescript: 4.6.4
 
@@ -1622,6 +1638,7 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
+<<<<<<< HEAD
     dev: true
 
   /@trufflesuite/chromafi/3.0.0:
@@ -1635,6 +1652,8 @@ packages:
       lodash.merge: 4.6.2
       strip-ansi: 4.0.0
       strip-indent: 2.0.0
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /@tsconfig/node10/1.0.8:
@@ -1665,6 +1684,7 @@ packages:
       - utf-8-validate
     dev: true
 
+<<<<<<< HEAD
   /@typechain/ethers-v5/6.0.5_6w7tb7ftvbwnwoocvtp43eyy2y:
     resolution: {integrity: sha512-KJh+EWuxmX1a17fQWS1ba8DCYcqK7UpdbqMZZwyfiv9FQfn8ZQJX17anbkCMOSU8TV3EvRuJ/vFEKGzKnpkO8g==}
     peerDependencies:
@@ -1677,6 +1697,8 @@ packages:
       typescript: 4.6.4
     dev: true
 
+=======
+>>>>>>> 73352f5 (created new branch)
   /@typechain/ethers-v5/7.2.0_e674wvycsr2lyypt7eogaxoyjq:
     resolution: {integrity: sha512-jfcmlTvaaJjng63QsT49MT6R1HFhtO/TBMWbyzPFSzMmVIqb2tL6prnKBs4ZJrSvmgIXWy+ttSjpaxCTq8D/Tw==}
     peerDependencies:
@@ -1873,6 +1895,7 @@ packages:
     resolution: {integrity: sha1-7ihweulOEdK4J7y+UnC86n8+ce4=}
     dev: true
 
+<<<<<<< HEAD
   /@types/keygrip/1.0.2:
     resolution: {integrity: sha512-GJhpTepz2udxGexqos8wgaBx4I/zWIDPh/KOGEwAqtuGDkOUJu5eFvwmdBX4AmB8Odsr+9pHCQqiAqDL/yKMKw==}
     dev: true
@@ -1912,6 +1935,12 @@ packages:
     resolution: {integrity: sha512-FUN8YxcBakIs+walVe3+HcNP+Bxd0SB8BJHBWkglZ5C1XQWljlKcEFDG/dPiCIqwVCUbc5X0nYDlH62uEhdHMA==}
     dependencies:
       '@types/koa': 2.13.4
+=======
+  /@types/keyv/3.1.4:
+    resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
+    dependencies:
+      '@types/node': 12.20.50
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /@types/level-errors/3.0.0:
@@ -2019,6 +2048,12 @@ packages:
     resolution: {integrity: sha512-XISRgDJ2Tc5q4TRqvgJtzsRkFYNJzZrhTdtMoGVBttwzzQJkPnS3WWTFc7kuDRoPtPakl+T+OfdEUjYJj7Jbow==}
     dev: true
 
+  /@types/responselike/1.0.0:
+    resolution: {integrity: sha512-85Y2BjiufFzaMIlvJDvTTB8Fxl2xfLo4HgmHzVBz08w4wDePCTjYw66PdrolO0kzli3yam/YCgRufyo1DdQVTA==}
+    dependencies:
+      '@types/node': 12.20.50
+    dev: true
+
   /@types/secp256k1/4.0.3:
     resolution: {integrity: sha512-Da66lEIFeIz9ltsdMZcpQvmrmmoqrfju8pm1BH8WbYjZSwUgCwXLb9C+9XYogwBITnbsSaMdVPb2ekf7TV+03w==}
     dependencies:
@@ -2066,12 +2101,15 @@ packages:
       '@types/underscore': 1.11.4
     dev: true
 
+<<<<<<< HEAD
   /@types/ws/7.4.7:
     resolution: {integrity: sha512-JQbbmxZTZehdc2iszGKs5oC3NFnjeay7mtAWrdt7qNtAVK0g19muApzAy4bm9byz79xa2ZnO/BOBC2R8RC5Lww==}
     dependencies:
       '@types/node': 12.20.51
     dev: true
 
+=======
+>>>>>>> 73352f5 (created new branch)
   /@typescript-eslint/eslint-plugin/4.33.0_lzzr7k3tjtqil7aczuhmzzwame:
     resolution: {integrity: sha512-aINiAxGVdOl1eJyVjaWn/YcVAq4Gi/Yo35qHGCnqbWVz61g39D0h23veY/MA0rFFGfxK7TySg2uwDeNv+JgVpg==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -3785,6 +3823,7 @@ packages:
       unpipe: 1.0.0
     transitivePeerDependencies:
       - supports-color
+<<<<<<< HEAD
     dev: true
 
   /boolbase/1.0.0:
@@ -3821,6 +3860,8 @@ packages:
       bn.js: 5.2.0
       bs58: 4.0.1
       text-encoding-utf-8: 1.0.2
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /brace-expansion/1.1.11:
@@ -5944,6 +5985,7 @@ packages:
       tape: 4.15.1
     transitivePeerDependencies:
       - supports-color
+<<<<<<< HEAD
     dev: true
 
   /eth-block-tracker/4.4.3:
@@ -5958,6 +6000,8 @@ packages:
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /eth-ens-namehash/2.0.8:
@@ -6015,6 +6059,7 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
+<<<<<<< HEAD
     dev: true
 
   /eth-json-rpc-infura/5.1.0:
@@ -6026,6 +6071,8 @@ packages:
       node-fetch: 2.6.7
     transitivePeerDependencies:
       - encoding
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /eth-json-rpc-middleware/1.6.0:
@@ -6046,6 +6093,7 @@ packages:
       tape: 4.15.1
     transitivePeerDependencies:
       - supports-color
+<<<<<<< HEAD
     dev: true
 
   /eth-json-rpc-middleware/6.0.0:
@@ -6064,6 +6112,8 @@ packages:
       safe-event-emitter: 1.0.1
     transitivePeerDependencies:
       - encoding
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /eth-lib/0.1.29:
@@ -6564,10 +6614,13 @@ packages:
       to-regex: 3.0.2
     transitivePeerDependencies:
       - supports-color
+<<<<<<< HEAD
     dev: true
 
   /exponential-backoff/3.1.0:
     resolution: {integrity: sha512-oBuz5SYz5zzyuHINoe9ooePwSu0xApKWgeNzok4hZ5YKXFh9zrQBEM15CXqoZkJJPuI2ArvqjPQd8UKJA753XA==}
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /express/4.18.1:
@@ -8632,6 +8685,7 @@ packages:
       safe-event-emitter: 1.0.1
     transitivePeerDependencies:
       - supports-color
+<<<<<<< HEAD
     dev: true
 
   /json-rpc-engine/5.4.0:
@@ -8647,6 +8701,8 @@ packages:
     dependencies:
       '@metamask/safe-event-emitter': 2.0.0
       eth-rpc-errors: 4.0.3
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /json-rpc-error/2.0.0:
@@ -12051,6 +12107,7 @@ packages:
       statuses: 2.0.1
     transitivePeerDependencies:
       - supports-color
+<<<<<<< HEAD
     dev: true
 
   /sentence-case/2.1.1:
@@ -12067,6 +12124,8 @@ packages:
       lodash: 4.17.21
       natural: 0.1.29
       randy: 1.5.1
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /serialize-javascript/6.0.0:
@@ -12451,11 +12510,14 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
+<<<<<<< HEAD
     dev: true
 
   /sort-deep-object-arrays/1.1.2:
     resolution: {integrity: sha512-Lm0ygD/SxAsAfMqAaQUEJC+1uDJt3e2fv1GdE7rHC+r5xfDNdZLZjAXZ3hJi9LarJG2u5d02XNI+trFUf4nTBQ==}
     hasBin: true
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /source-map-resolve/0.5.3:
@@ -12993,11 +13055,14 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
+<<<<<<< HEAD
     dev: true
 
   /sylvester/0.0.21:
     resolution: {integrity: sha1-KYexzivS84sNzio0OIiEv6RADqc=}
     engines: {node: '>=0.2.6'}
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /sync-request/6.1.0:
@@ -13313,7 +13378,11 @@ packages:
       ts-essentials: 1.0.4
     dev: true
 
+<<<<<<< HEAD
   /ts-node/10.7.0_azdrrf4jjxrqmzh6vuo6kebvyu:
+=======
+  /ts-node/10.7.0_3wjt2zwv2dlvyy743xkk2n2efq:
+>>>>>>> 73352f5 (created new branch)
     resolution: {integrity: sha512-TbIGS4xgJoX2i3do417KSaep1uRAW/Lu+WAL2doDHC0D6ummjirVOXU5/7aiZotbQ5p1Zp9tP7U6cYhA0O7M8A==}
     hasBin: true
     peerDependencies:
@@ -14270,6 +14339,7 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
+<<<<<<< HEAD
     dev: true
 
   /web3-provider-engine/16.0.3:
@@ -14304,6 +14374,8 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /web3-providers-http/1.2.11:
@@ -14467,6 +14539,7 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
+<<<<<<< HEAD
     dev: true
 
   /webcrypto-core/1.7.5:
@@ -14477,6 +14550,8 @@ packages:
       asn1js: 3.0.2
       pvtsutils: 1.3.2
       tslib: 2.4.0
+=======
+>>>>>>> 73352f5 (created new branch)
     dev: true
 
   /webidl-conversions/3.0.1:
