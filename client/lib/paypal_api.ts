@@ -2,6 +2,7 @@ const CLIENT_ID: string = process.env.PAYPAL_CLIENT_ID as string;
 const CLIENT_SECRET: string = process.env.PAYPAL_CLIENT_SECRET as string;
 const base = "https://api-m.sandbox.paypal.com";
 
+/** CreateOrder,CaptureOrder & RefundOrder for payment  */
 //library function for creating an order
 export async function createOrder(amountPrice: string): Promise<string> {
   const accessToken: string = await generateAccessToken();
@@ -77,9 +78,12 @@ export async function refundPayment(paymentId: string) {
   const data = await response.json();
   return data;
 }
+
 //helper function for generating access token via paypal client id and secret
 export async function generateAccessToken(): Promise<string> {
-  const auth = Buffer.from(CLIENT_ID + ":" + CLIENT_SECRET).toString("base64");
+  const auth: string = Buffer.from(CLIENT_ID + ":" + CLIENT_SECRET).toString(
+    "base64"
+  );
   const response = await fetch(`${base}/v1/oauth2/token`, {
     method: "post",
     body: "grant_type=client_credentials",
@@ -89,4 +93,38 @@ export async function generateAccessToken(): Promise<string> {
   });
   const data = await response.json();
   return data.access_token;
+}
+/** Till here is for order payment */
+
+/** Here are the login utilites */
+
+export async function generateAccessTokenForCustomer(
+  authorization: string
+): Promise<string> {
+  const auth: string = Buffer.from(CLIENT_ID + ":" + CLIENT_SECRET).toString(
+    "base64"
+  );
+  const url = `${base}/v1/oauth2/token`;
+  const response = await fetch(url, {
+    method: "post",
+    body: `grant_type=authorization&code=${authorization}`,
+    headers: {
+      Authorization: `Basic ${auth}`,
+    },
+  });
+  const data = await response.json();
+  return data.access_token;
+}
+
+//fetching the customer data
+export async function getCustomerData(accessToken: string) {
+  const url = `${base}/v1/identity/oauth2/userinfo?schema=paypalv1.1`;
+  const response = await fetch(url, {
+    method: "get",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  const data = await response.json();
 }
