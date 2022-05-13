@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
-
+import Script from "next/script";
 import { useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 const Home: NextPage = () => {
@@ -20,6 +20,7 @@ const Home: NextPage = () => {
         }}
       >
         <main className={styles.main}>
+          <span id="loginBtn"></span>
           <label>Enter amount</label>
           <input
             style={{
