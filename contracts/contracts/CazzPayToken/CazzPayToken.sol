@@ -20,16 +20,4 @@ contract CazzPayToken is ERC20, MultiOwnable {
     function mintTokens(address _mintTo, uint256 _amtToMint) public onlyOwner {
         _mint(_mintTo, _amtToMint);
     }
-
-    // @summary Burns specified amount of tokens owned by someone
-    // @notice This function is meant to be called when going off-ramp with $CZP
-    // @dev MAKE SURE TO CALL THIS ALONG WITH FIAT TRANSFER
-    // @param _tokenOwner Owner whose token is to be burnt
-    // @param _amtToBurn Number of tokens to burn
-    function burnTokensFromOwner(address _tokenOwner, uint256 _amtToBurn)
-        public
-        onlyOwner
-    {
-        _burn(_tokenOwner, _amtToBurn);
-    }
 }
