@@ -98,6 +98,7 @@ export async function generateAccessToken(): Promise<string> {
 
 /** Here are the login utilites */
 
+//generating access token for customer via authorization code
 export async function generateAccessTokenForCustomer(
   authorization: string
 ): Promise<string> {
@@ -116,7 +117,7 @@ export async function generateAccessTokenForCustomer(
   return data.access_token;
 }
 
-//fetching the customer data
+//fetching the customer data via access_token
 export async function getCustomerData(accessToken: string) {
   const url = `${base}/v1/identity/oauth2/userinfo?schema=paypalv1.1`;
   const response = await fetch(url, {
@@ -127,4 +128,30 @@ export async function getCustomerData(accessToken: string) {
     },
   });
   const data = await response.json();
+  const customerData: PaypalProfileProps = {
+    name: data.name,
+    paypalId: data.payer_id,
+    email: data.emails[0].value,
+  };
+  return customerData;
+}
+
+//api function for getting access_token via refresh_token if access_token is expired
+export async function refreshAccessToken(
+  refreshToken: string
+): Promise<string> {
+  const auth: string = Buffer.from(CLIENT_ID + ":" + CLIENT_SECRET).toString(
+    "base64"
+  );
+  const url = `${base}/v1/oauth2/token`;
+  const response = await fetch(url, {
+    method: "post",
+    body: `grant_type=refresh_token&refresh_token=${refreshToken}`,
+    headers: {
+      Authorization: `Basic ${auth}`,
+    },
+  });
+
+  const data = await response.json();
+  return data.access_token;
 }
