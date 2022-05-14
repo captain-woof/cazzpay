@@ -4,7 +4,7 @@ specifiers:
   '@nomiclabs/hardhat-ethers': ^2.0.0
   '@nomiclabs/hardhat-etherscan': ^3.0.0
   '@nomiclabs/hardhat-waffle': ^2.0.0
-  '@openzeppelin/contracts': ^4.6.0
+  '@openzeppelin/contracts': '3'
   '@typechain/ethers-v5': ^7.0.1
   '@typechain/hardhat': ^2.3.0
   '@types/chai': ^4.2.21
@@ -39,7 +39,7 @@ devDependencies:
   '@nomiclabs/hardhat-ethers': 2.0.5_ethers@5.6.5+hardhat@2.9.3
   '@nomiclabs/hardhat-etherscan': 3.0.3_hardhat@2.9.3
   '@nomiclabs/hardhat-waffle': 2.0.3_ialzm4xalh2kvx5dbnjvwfyk3a
-  '@openzeppelin/contracts': 4.6.0
+  '@openzeppelin/contracts': 3.4.2
   '@typechain/ethers-v5': 7.2.0_e674wvycsr2lyypt7eogaxoyjq
   '@typechain/hardhat': 2.3.1_arebner7dfz333jqouc33z2vh4
   '@types/chai': 4.3.1
@@ -726,8 +726,8 @@ packages:
       hardhat: 2.9.3
     dev: true
 
-  /@openzeppelin/contracts/4.6.0:
-    resolution: {integrity: sha512-8vi4d50NNya/bQqCmaVzvHNmwHvS0OBKb7HNtuNwEE3scXWrP31fKQoGxNMT+KbzmrNZzatE3QK5p2gFONI/hg==}
+  /@openzeppelin/contracts/3.4.2:
+    resolution: {integrity: sha512-z0zMCjyhhp4y7XKAcDAi3Vgms4T2PstwBdahiO0+9NaGICQKjynK3wduSRplTgk4LXmoO1yfDGO5RbjKYxtuxA==}
     dev: true
 
   /@resolver-engine/core/0.3.3:
