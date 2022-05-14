@@ -15,7 +15,7 @@ contract CazzPayDex {
     IUniswapV2Factory public immutable factoryContract;
     IUniswapV2Router02 public immutable routerContract;
     CazzPayToken public immutable czpContract;
-    address public immutable wethContractAddr;
+    IERC20 public immutable wethContract;
 
     ////////////////////////
     // EVENTS
@@ -52,64 +52,78 @@ contract CazzPayDex {
     ) {
         factoryContract = _factoryContractAddr;
         routerContract = _routerContractAddr;
-        wethContractAddr = routerContract.WETH();
+        wethContract = IERC20(routerContract.WETH());
         czpContract = _czpContract;
     }
 
-    /*
-    @title Create Pair with CZP and another token
-    @notice Creates a pool with $CZP and another token
-    @param _factoryContract Factory contract
-    @param _czpContractAddr Contract address of CZP contract
+    /**
+    @notice Creates a pair with $CZP and another token
     @param _otherTokenContractAddr Contract address of the other token to form pool with
-    @returns Address of the pair created
+    @return poolAddr Address of the pair created
     */
-    function createPairWithCzp(
-        IUniswapV2Factory _factoryContract,
-        address _czpContractAddr,
-        address _otherTokenContractAddr
-    ) public returns (address poolAddr) {
-        poolAddr = _factoryContract.createPair(
-            _czpContractAddr,
+    function createPairWithCzpAndOtherToken(address _otherTokenContractAddr)
+        public
+        returns (address poolAddr)
+    {
+        poolAddr = factoryContract.createPair(
+            address(czpContract),
             _otherTokenContractAddr
         );
         emit CreatedPairWithCzpAndOtherToken(poolAddr, _otherTokenContractAddr);
     }
 
     /**
+    @notice Creates a pair with $CZP and ETH
+    @return poolAddr Address of the pair created
+    */
+    function createPairWithCzpAndEth()
+        public
+        payable
+        returns (address poolAddr)
+    {
+        poolAddr = _factoryContract.createPair(
+            address(czpContract),
+            address(wethContract)
+        );
+        emit CreatedPairWithCzpAndOtherToken(poolAddr, address(wethContract));
+    }
+
+    /**
     @notice Fetches the pair address of a CZP-OtherToken pool
-    @param _czpContractAddr Address of the CZP contract
     @param _otherTokenContractAddr Address of the other token contract
     @return poolAddr Address of the pool
      */
-    function getCzpAndOtherTokenPoolAddr(
-        address _czpContractAddr,
-        address _otherTokenContractAddr
-    ) public view returns (address poolAddr) {
+    function getCzpAndOtherTokenPoolAddr(address _otherTokenContractAddr)
+        public
+        view
+        returns (address poolAddr)
+    {
         return
-            _factoryContract.getPair(_czpContractAddr, _otherTokenContractAddr);
+            _factoryContract.getPair(
+                address(czpContract),
+                _otherTokenContractAddr
+            );
     }
 
     /**
     @notice Gets all Pairs with CZP
-    @param _czpContractAddr Address of the CZP contract
     @return pairAddrsWithCzpAndOtherToken List of all pairs that contains CZP
      */
-    function getAllPairsWithCzpAndOtherToken(address _czpContractAddr)
+    function getAllPairsWithCzpAndOtherToken()
         public
         view
         returns (address[] memory pairAddrsWithCzpAndOtherToken)
     {
-        uint256 totalPairsNum = _factoryContract.allPairsLength();
+        uint256 totalPairsNum = factoryContract.allPairsLength();
         address[] memory pairAddrs = new address[](totalPairsNum);
 
         uint256 index = 0;
         IUniswapV2Pair pairContract;
         for (uint256 i = 0; i < totalPairsNum; i++) {
-            pairContract = IUniswapV2Pair(_factoryContract.allPairs(i));
+            pairContract = IUniswapV2Pair(factoryContract.allPairs(i));
             if (
-                pairContract.token0() == _czpContractAddr ||
-                pairContract.token1() == _czpContractAddr
+                pairContract.token0() == address(czpContract) ||
+                pairContract.token1() == address(czpContract)
             ) {
                 pairAddrs[index] = address(pairContract);
                 index += 1;
@@ -258,7 +272,7 @@ contract CazzPayDex {
 
         // Fire event
         emit AddedLiquidityToCzpAndOtherTokenPair(
-            wethContractAddr,
+            address(wethContract),
             msg.sender,
             czpAmtAdded,
             ethAmtAdded,
@@ -340,7 +354,7 @@ contract CazzPayDex {
         // Check if pair exists
         address pairAddr = factoryContract.getPair(
             address(czpContract),
-            wethContractAddr
+            address(wethContract)
         );
         require(pairAddr != address(0), "PAIR DOES NOT EXIST");
 
@@ -369,7 +383,7 @@ contract CazzPayDex {
 
         // Fire event
         emit WithdrawnLiquidityFromCzpAndOtherTokenPair(
-            wethContractAddr,
+            address(wethContract),
             msg.sender,
             czpReceived,
             ethReceived,
