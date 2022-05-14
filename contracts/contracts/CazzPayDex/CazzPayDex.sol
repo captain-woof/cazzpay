@@ -7,8 +7,9 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../Ownable/MultiOwnable.sol";
 
-contract CazzPayDex {
+contract CazzPayDex is MultiOwnable {
     ////////////////////////
     // STORAGE
     ////////////////////////
@@ -16,6 +17,7 @@ contract CazzPayDex {
     IUniswapV2Router02 public immutable routerContract;
     CazzPayToken public immutable czpContract;
     IERC20 public immutable wethContract;
+    uint16 public paymentTransferFeesPerc; // This would be charged from seller when receiving payments; this number would be divided by 10000 before usage; e.g, for 0.01%, this value should be 1.
 
     ////////////////////////
     // EVENTS
@@ -41,19 +43,63 @@ contract CazzPayDex {
         uint256 liquidityTokensSubmitted
     );
 
+    event BoughtWithCrypto(
+        address payerWalletAddr,
+        string recipientAccountId,
+        string randomNonce,
+        address tokenUsedForPurchaseContractAddr,
+        uint256 tokenAmtUsedForPurchased,
+        uint256 fiatAmountPaid
+    );
+
     ////////////////////////
     // FUNCTIONS
     ////////////////////////
 
+    /**
+    @param _factoryContractAddr Address of the factory contract
+    @param _routerContractAddr Address of the router contract
+    @param _czpContractAddr Address of CZP contract
+    @param _paymentTransferFeesPerc This would be charged from seller when receiving payments; this number would be divided by 10000 before usage; e.g, for 0.01%, this value should be 1.
+     */
     constructor(
         IUniswapV2Factory _factoryContractAddr,
         IUniswapV2Router02 _routerContractAddr,
-        CazzPayToken _czpContract
+        CazzPayToken _czpContractAddr,
+        uint16 _paymentTransferFeesPerc
     ) {
         factoryContract = _factoryContractAddr;
         routerContract = _routerContractAddr;
         wethContract = IERC20(routerContract.WETH());
-        czpContract = _czpContract;
+        czpContract = _czpContractAddr;
+        paymentTransferFeesPerc = _paymentTransferFeesPerc;
+    }
+
+    /**
+    @notice Sets a new fees percentage for transfer
+    @param _newPaymentTransferFeesPerc This would be charged from seller when receiving payments; this number would be divided by 10000 before usage; e.g, for 0.01%, this value should be 1.
+     */
+    function setPaymentTransferFeesPerc(uint16 _newPaymentTransferFeesPerc)
+        external
+        onlyOwner
+    {
+        paymentTransferFeesPerc = _newPaymentTransferFeesPerc;
+    }
+
+    /**
+    @notice Calculates the amount after deducting fees from it
+    @param _totalAmt Total amount to deduct fees from
+    @return totalAmtWithFeesDeducted Amount after fees would be deducted
+     */
+    function _calculateAmtWithFeesDeducted(uint256 _totalAmt)
+        internal
+        view
+        returns (uint256 totalAmtWithFeesDeducted)
+    {
+        totalAmtWithFeesDeducted =
+            _totalAmt -
+            ((_totalAmt * _paymentTransferFeesPerc) / 10000);
+        return totalAmtWithFeesDeducted;
     }
 
     /**
@@ -99,7 +145,7 @@ contract CazzPayDex {
         returns (address poolAddr)
     {
         return
-            _factoryContract.getPair(
+            factoryContract.getPair(
                 address(czpContract),
                 _otherTokenContractAddr
             );
@@ -389,5 +435,174 @@ contract CazzPayDex {
             ethReceived,
             _liquidityToWithdraw
         );
+    }
+
+    /**
+    @notice Called by buyer to pay to seller. Any extra tokens are refunded. Since this is a purchase, a payment transfer fee is charged IN ADDITION to the swapping fees
+    @param _recipientAccountId The account id of recipient (for indexing)
+    @param _randomNonce A random nonce; would be used for payment verification later; buyer must submit this to verify and complete the transaction
+    @param _otherTokenContractAddr Address of the token to use for purchase
+    @param _otherTokenMaxAmtToPayWith Max amount of the 'other token' to use for purchase
+    @param _fiatAmtToPay Fiat to transfer to seller; MUST BE ATOMIC WITH 18 decimals
+    @param _deadline Deadline (unix secs) to execute this transaction
+    @return otherTokenAmtUsed Amount of 'other token' used
+    @return fiatAmountPaid Amount of FIAT paid to seller (with fees deducted)
+    @dev Fires event BoughtWithCrypto(address payerWalletAddr, string recipientAccountId, string randomNonce, address tokenUsedForPurchaseContractAddr, uint256 tokenAmtUsedForPurchased, uint256 fiatAmountPaid);
+     */
+    function buyWithCryptoToken(
+        string _recipientAccountId,
+        string _randomNonce,
+        address _otherTokenContractAddr,
+        uint256 _otherTokenMaxAmtToPayWith,
+        uint256 _fiatAmtToPay,
+        uint256 _deadline
+    ) public returns (uint256 otherTokenAmtUsed, uint256 fiatAmountPaid) {
+        // If 'other token' is czp, no swap is needed, else swap needed
+        if (_otherTokenContractAddr == address(czpContract)) {
+            // Check if tokens are enough
+            require(
+                _fiatAmtToPay < _otherTokenMaxAmtToPayWith,
+                "INSUFFICIENT MAX AMOUNT"
+            );
+
+            // Transfer token to this contract
+            czpContract.transferFrom(msg.sender, address(this), _fiatAmtToPay);
+
+            // Calculate fee deducted amount
+            uint256 fiatAmtToPayWithFeesDeducted = _calculateAmtWithFeesDeducted(
+                    _fiatAmtToPay
+                );
+
+            // Burn CZP to simulate FIAT
+            czpContract.burn(fiatAmtToPayWithFeesDeducted);
+
+            // Emit event
+            emit BoughtWithCrypto(
+                msg.sender,
+                _recipientAccountId,
+                _randomNonce,
+                _otherTokenContractAddr,
+                _fiatAmtToPay,
+                fiatAmtToPayWithFeesDeducted
+            );
+
+            // Return
+            return (_fiatAmtToPay, fiatAmtToPayWithFeesDeducted);
+        } else {
+            // If 'other token' is not CZP, swapping is needed
+            /* TODO: Get price of 'other token'
+
+            // Check to see if Pair exists
+            require(factoryContract.getPair(address(czpContract),_otherTokenContractAddr) != address(0), "PAIR DOES NOT EXIST");
+
+            // Check to see if enough tokens are available
+            uint256 otherTokenPriceInCzp = ...
+            require(otherTokenPriceInCzp * _otherTokenMaxAmtToPayWith >= _fiatAmtToPay, "INSUFFICIENT MAX AMOUNT");
+
+            // Transfer tokens to this contract
+            IERC20(_otherTokenContractAddr).transferFrom(msg.sender, address(this), _otherTokenMaxAmtToPayWith);
+
+            // Approve router to spend tokens
+            IERC20(_otherTokenContractAddr).approve(address(routerContract), _otherTokenMaxAmtToPayWith);
+
+            // Swap tokens
+            address[] memory swapPath = new address[
+                _otherTokenContractAddr,
+                address(czpContract)
+            ](2); 
+            (otherTokenAmtUsed, czpAmtReceived) = routerContract.swapTokensForExactTokens(
+                _fiatAmtToPay,
+                _otherTokenMaxAmtToPayWith,
+                swapPath,
+                address(this),
+                _deadline
+            );
+
+            // Burn CZP to simulate FIAT
+            czpContract.burn(czpAmtReceived);
+
+            // Refund unused tokens
+            if(otherTokenAmtUsed < _otherTokenMaxAmtToPayWith){
+                IERC20(_otherTokenContractAddr).approve(address (routerContract), 0);
+                IERC20(_otherTokenContractAddr).transfer(msg.sender, _otherTokenMaxAmtToPayWith - otherTokenAmtUsed);
+            }
+
+            // Emit event
+            emit BoughtWithCrypto(
+                msg.sender,
+                _recipientAccountId,
+                _randomNonce,
+                _otherTokenContractAddr,
+                otherTokenAmtUsed,
+                czpAmtReceived
+            );
+
+            // Return
+            return(otherTokenAmtUsed, czpAmtReceived);
+            */
+        }
+    }
+
+    /**
+    @notice Called by buyer to pay to seller. Any extra tokens are refunded. Since this is a purchase, a payment transfer fee is charged IN ADDITION to the swapping fees
+    @param _recipientAccountId The account id of recipient (for indexing)
+    @param _randomNonce A random nonce; would be used for payment verification later; buyer must submit this to verify and complete the transaction
+    @param _ethMaxAmtToPayWith Max amount of ETH to use for purchase
+    @param _fiatAmtToPay Fiat to transfer to seller; MUST BE ATOMIC WITH 18 decimals
+    @param _deadline Deadline (unix secs) to execute this transaction
+    @return ethAmtUsed Amount of ETH used
+    @return fiatAmountPaid Amount of FIAT paid to seller (with fees deducted)
+    @dev Fires event BoughtWithCrypto(address payerWalletAddr, string recipientAccountId, string randomNonce, address tokenUsedForPurchaseContractAddr, uint256 tokenAmtUsedForPurchased, uint256 fiatAmountPaid);
+     */
+    function buyWithEth(
+        string _recipientAccountId,
+        string _randomNonce,
+        uint256 _ethMaxAmtToPayWith,
+        uint256 _fiatAmtToPay,
+        uint256 _deadline
+    ) public payable returns (uint256 ethAmtUsed, uint256 fiatAmountPaid) {
+        /* TODO: Get price of 'other token'
+
+        // Check to see if Pair exists
+        require(factoryContract.getPair(address(czpContract),address(wethContract)) != address(0), "PAIR DOES NOT EXIST");
+
+        // Check to see if enough tokens are available
+        uint256 ethPriceInCzp = ...
+        require(ethPriceInCzp * _ethMaxAmtToPayWith >= _fiatAmtToPay, "INSUFFICIENT MAX AMOUNT");
+
+        // Transfer tokens to this contract
+        wethContract.transferFrom(msg.sender, address(this), _ethMaxAmtToPayWith);
+
+        // Approve router to spend tokens
+        wethContract.approve(address(routerContract), _ethMaxAmtToPayWith);
+
+        // Swap tokens
+        address[] memory swapPath = new address[
+            address(wethContract),
+            address(czpContract)
+        ](2); 
+        (ethAmtUsed, czpAmtReceived) = routerContract.swapETHForExactTokens(
+            _fiatAmtToPay,
+            swapPath,
+            address(this),
+            _deadline
+        );
+
+        // Burn CZP to simulate FIAT
+        czpContract.burn(czpAmtReceived);
+
+        // Emit event
+        emit BoughtWithCrypto(
+            msg.sender,
+            _recipientAccountId,
+            _randomNonce,
+            address(wethContract),
+            ethAmtUsed,
+            czpAmtReceived
+        );
+
+        // Return
+        return(ethAmtUsed, czpAmtReceived);
+        */
     }
 }

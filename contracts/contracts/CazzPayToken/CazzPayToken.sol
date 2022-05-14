@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.12;
+pragma solidity ^0.6.6;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "../Ownable/MultiOwnable.sol";
 
-contract CazzPayToken is ERC20, MultiOwnable {
+contract CazzPayToken is MultiOwnable, ERC20Burnable {
     // @title Constructor
     // @param _initialAmtToMint Initial amount of tokens to mint
     constructor(uint256 _initialAmtToMint) ERC20("CazzPayToken", "CZP") {
