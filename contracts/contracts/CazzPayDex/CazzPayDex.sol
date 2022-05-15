@@ -81,7 +81,7 @@ contract CazzPayDex is MultiOwnable {
      */
     function setPaymentTransferFeesPerc(uint16 _newPaymentTransferFeesPerc)
         external
-        onlyOwner
+        onlyOwners
     {
         paymentTransferFeesPerc = _newPaymentTransferFeesPerc;
     }

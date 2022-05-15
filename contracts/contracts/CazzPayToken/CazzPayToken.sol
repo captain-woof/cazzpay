@@ -18,7 +18,7 @@ contract CazzPayToken is MultiOwnable, ERC20Burnable {
     // @dev MAKE SURE TO CALL THIS ALONG WITH FIAT TRANSFER
     // @param _mintTo Address to mint to
     // @param _amtToMint Amount of tokens to mint
-    function mintTokens(address _mintTo, uint256 _amtToMint) public onlyOwner {
+    function mintTokens(address _mintTo, uint256 _amtToMint) public onlyOwners {
         _mint(_mintTo, _amtToMint);
     }
 }

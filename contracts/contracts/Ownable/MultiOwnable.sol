@@ -12,7 +12,7 @@ contract MultiOwnable {
     EnumerableSet.AddressSet private _owners;
 
     // Modifier
-    modifier onlyOwner() {
+    modifier onlyOwners() {
         require(_owners.contains(msg.sender), "NOT OWNER");
         _;
     }
@@ -25,14 +25,14 @@ contract MultiOwnable {
     // @summary Adds an owner
     // @notice Only callable by an existing owner
     // @param _newOwner Address of the new owner
-    function addOwner(address _newOwner) external onlyOwner {
+    function addOwner(address _newOwner) external onlyOwners {
         _addOwner(_newOwner);
     }
 
     // @summary Removes an owner
     // @notice Only callable by an existing owner
     // @param _ownerToRemove Address of the new owner
-    function removeOwner(address _ownerToRemove) external onlyOwner {
+    function removeOwner(address _ownerToRemove) external onlyOwners {
         _removeOwner(_ownerToRemove);
     }
 
