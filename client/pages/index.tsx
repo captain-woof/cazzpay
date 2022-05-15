@@ -19,23 +19,6 @@ const Home: NextPage = () => {
         >
           <button id="loginBtn">Login</button>
         </Link>
-        {/* <script>
-          paypal.use( ['login'], function (login) {
-  login.render ({
-    "appid":"AQ1QxVn05a-afWgK2ilpbNf-eRwtmFSGKf3aVjO0wH6wXu95XjRnF22k9wqgBqXG5U0kSFx2urSAN6ub",
-    "authend":"sandbox",
-    "scopes":"email openid profile",
-    "containerid":"loginBtn",
-    "responseType":"code",
-    "locale":"en-in",
-    "buttonType":"LWP",
-    "buttonShape":"pill",
-    "buttonSize":"lg",
-    "fullPage":"true",
-    "returnurl":"https://rajarshi-biswas38.netlify.app/"
-  });
-});
-          </script> */}
       </main>
     </div>
   );
