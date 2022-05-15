@@ -18,17 +18,17 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
-
 const config: HardhatUserConfig = {
   solidity: {
-    compilers: ["0.6.6", "0.8.2"].map((versionNum) => ({
+    compilers: ["0.5.16", "0.6.6", "0.8.2"].map((versionNum) => ({
       version: versionNum,
       settings: {
         optimizer: {
           enabled: true,
           runs: 5000,
+          details: {
+            yul: false
+          }
         },
       }
     }))
