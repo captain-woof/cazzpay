@@ -54,6 +54,13 @@ contract CazzPayDex is MultiOwnable {
         uint256 fiatAmountPaid /* Atomic */
     );
 
+    event TokensSwapped(
+        address inputTokenContractAddr,
+        address outputTokenContractAddr,
+        uint256 inputTokenAmt,
+        uint256 outputTokenAmt
+    );
+
     ////////////////////////
     // FUNCTIONS
     ////////////////////////
@@ -458,6 +465,7 @@ contract CazzPayDex is MultiOwnable {
 
     /**
     @notice Called by buyer to pay to seller. Any extra tokens are refunded. Since this is a purchase, a payment transfer fee is charged IN ADDITION to the swapping fees
+    @notice Caller must approve this contract to spend the input tokens BEFORE calling this
     @param _recipientAccountId The account id of recipient (for indexing)
     @param _randomNonce A random nonce; would be used for payment verification later; buyer must submit this to verify and complete the transaction
     @param _otherTokenContractAddr Address of the token to use for purchase
@@ -667,6 +675,60 @@ contract CazzPayDex is MultiOwnable {
         return (ethAmtUsed, fiatAmtToPayWithFeesDeducted);
     }
 
+    /**
+    @notice Function to swap tokens; swaps exact amount of Other tokens for maximum CZP tokens
+    @notice Caller must approve this contract to spend the input tokens BEFORE calling this
+    @param _otherTokenContractAddr Address of the Other token contract
+    @param _otherTokenAmt Exact Other tokens amount
+    @param _czpMinAmt Minimum output CZP to receive
+    @param _deadline Deadline (unix secs) to execute this transaction
+    @return otherTokenAmtUsed Other token amount used for swapping
+    @return czpAmtReceived Amount of CZP received after swapping
+    @dev Fires event event TokensSwapped(address inputTokenContractAddr, address outputTokenContractAddr, uint256 inputTokenAmt, uint256 outputTokenAmt);
+     */
+    function swapOtherTokensForCzp(
+        address _otherTokenContractAddr,
+        uint256 _otherTokenAmt,
+        uint256 _czpMinAmt,
+        uint256 _deadline
+    ) public returns (uint256 otherTokenAmtUsed, uint256 czpAmtReceived) {
+        return
+            _swapTokens(
+                _otherTokenContractAddr,
+                address(czpContract),
+                _otherTokenAmt,
+                _czpMinAmt,
+                _deadline
+            );
+    }
+
+    /**
+    @notice Function to swap tokens; swaps exact amount of Other tokens for maximum CZP tokens
+    @notice Caller must approve this contract to spend the input tokens BEFORE calling this
+    @param _otherTokenContractAddr Address of the Other token contract
+    @param _czpAmt Exact CZP tokens amount
+    @param _otherTokenMinAmt Minimum Other tokens to receive
+    @param _deadline Deadline (unix secs) to execute this transaction
+    @return czpAmtUsed Other token amount used for swapping
+    @return otherTokenAmtReceived Amount of other tokens received after swapping
+    @dev Fires event event TokensSwapped(address inputTokenContractAddr, address outputTokenContractAddr, uint256 inputTokenAmt, uint256 outputTokenAmt);
+     */
+    function swapCzpForOtherTokens(
+        address _otherTokenContractAddr,
+        uint256 _czpAmt,
+        uint256 _otherTokenMinAmt,
+        uint256 _deadline
+    ) public returns (uint256 czpAmtUsed, uint256 otherTokenAmtReceived) {
+        return
+            _swapTokens(
+                address(czpContract),
+                _otherTokenContractAddr,
+                _czpAmt,
+                _otherTokenMinAmt,
+                _deadline
+            );
+    }
+
     ///////////////////////////
     // INTERNAL FUNCTIONS
     ///////////////////////////
@@ -685,5 +747,61 @@ contract CazzPayDex is MultiOwnable {
             _totalAmt -
             ((_totalAmt * _paymentTransferFeesPerc) / 10000);
         return totalAmtWithFeesDeducted;
+    }
+
+    /**
+    @notice Function to swap tokens; swaps exact amount of input tokens for maximum output tokens
+    @notice Caller must approve this contract to spend the input tokens BEFORE calling this
+    @param _inputTokenContractAddr Address of the input token contract
+    @param _outputTokenContractAddr Address of the output token contract
+    @param _inputTokenAmt Exact input tokens amount
+    @param _outputTokenMinAmt Minimum output tokens to receive
+    @param _deadline Deadline (unix secs) to execute this transaction
+    @return inputTokenAmtUsed Input token amount used for swapping
+    @return outputTokenAmtReceived Amount of output token received after swapping
+     */
+    function _swapTokens(
+        address _inputTokenContractAddr,
+        address _outputTokenContractAddr,
+        uint256 _inputTokenAmt,
+        uint256 _outputTokenMinAmt,
+        uint256 _deadline
+    )
+        internal
+        returns (uint256 inputTokenAmtUsed, uint256 outputTokenAmtReceived)
+    {
+        // Transfer input tokens to this contract
+        IERC20(_inputTokenContractAddr).transferFrom(
+            msg.sender,
+            address(this),
+            _inputTokenAmt
+        );
+
+        // Approve router to spend the input tokens
+        IERC20(_inputTokenContractAddr).approve(
+            address(routerContract),
+            _inputTokenAmt
+        );
+
+        // Perform token swap
+        address[] memory swapPath = new address[](2);
+        swapPath[0] = _inputTokenContractAddr;
+        swapPath[0] = _outputTokenContractAddr;
+        (inputTokenAmtUsed, outputTokenAmtReceived) = routerContract
+            .swapExactTokensForTokens(
+                _inputTokenAmt,
+                _outputTokenMinAmt,
+                swapPath,
+                msg.sender,
+                _deadline
+            );
+
+        // Emit event
+        emit TokensSwapped(
+            _inputTokenContractAddr,
+            _outputTokenContractAddr,
+            inputTokenAmtUsed,
+            outputTokenAmtReceived
+        );
     }
 }
