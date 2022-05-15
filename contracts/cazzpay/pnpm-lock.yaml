@@ -8,13 +8,16 @@ specifiers:
   '@typechain/ethers-v5': ^7.0.1
   '@typechain/hardhat': ^2.3.0
   '@types/chai': ^4.2.21
+  '@types/chai-as-promised': ^7.1.5
   '@types/mocha': ^9.0.0
   '@types/node': ^12.0.0
   '@typescript-eslint/eslint-plugin': ^4.29.1
   '@typescript-eslint/parser': ^4.29.1
+  '@uniswap/lib': 4.0.1-alpha
   '@uniswap/v2-core': ^1.0.1
   '@uniswap/v2-periphery': ^1.1.0-beta.0
   chai: ^4.2.0
+  chai-as-promised: ^7.1.1
   dotenv: ^10.0.0
   eslint: ^7.29.0
   eslint-config-prettier: ^8.3.0
@@ -44,13 +47,16 @@ devDependencies:
   '@typechain/ethers-v5': 7.2.0_e674wvycsr2lyypt7eogaxoyjq
   '@typechain/hardhat': 2.3.1_arebner7dfz333jqouc33z2vh4
   '@types/chai': 4.3.1
+  '@types/chai-as-promised': 7.1.5
   '@types/mocha': 9.1.1
   '@types/node': 12.20.51
   '@typescript-eslint/eslint-plugin': 4.33.0_lzzr7k3tjtqil7aczuhmzzwame
   '@typescript-eslint/parser': 4.33.0_e4zyhrvfnqudwdx5bevnvkluy4
+  '@uniswap/lib': 4.0.1-alpha
   '@uniswap/v2-core': 1.0.1
   '@uniswap/v2-periphery': 1.1.0-beta.0
   chai: 4.3.6
+  chai-as-promised: 7.1.1_chai@4.3.6
   dotenv: 10.0.0
   eslint: 7.32.0
   eslint-config-prettier: 8.5.0_eslint@7.32.0
@@ -1746,6 +1752,12 @@ packages:
       base-x: 3.0.9
     dev: true
 
+  /@types/chai-as-promised/7.1.5:
+    resolution: {integrity: sha512-jStwss93SITGBwt/niYrkf2C+/1KTeZCZl1LaeezTlqppAKeoQC7jxyqYuP72sxBGKCIbw7oHgbYssIRzT5FCQ==}
+    dependencies:
+      '@types/chai': 4.3.1
+    dev: true
+
   /@types/chai/4.3.1:
     resolution: {integrity: sha512-/zPMqDkzSZ8t3VtxOa4KPq7uzzW978M9Tvh+j7GHKuo6k6GTLxPJ4J5gE5cjfJ26pnXst0N5Hax8Sr0T2Mi9zQ==}
     dev: true
@@ -2161,6 +2173,11 @@ packages:
 
   /@uniswap/lib/1.1.1:
     resolution: {integrity: sha512-2yK7sLpKIT91TiS5sewHtOa7YuM8IuBXVl4GZv2jZFys4D2sY7K5vZh6MqD25TPA95Od+0YzCVq6cTF2IKrOmg==}
+    engines: {node: '>=10'}
+    dev: true
+
+  /@uniswap/lib/4.0.1-alpha:
+    resolution: {integrity: sha512-f6UIliwBbRsgVLxIaBANF6w09tYqc6Y/qXdsrbEmXHyFA7ILiKrIwRFXe1yOg8M3cksgVsO9N7yuL2DdCGQKBA==}
     engines: {node: '>=10'}
     dev: true
 
@@ -4163,6 +4180,15 @@ packages:
     resolution: {integrity: sha512-Obs3dteseU7K2oC5OFbJq/cEZ4LsvfCHw65M+woXfo4xq9bCVX8+P7k7QCAgmDMToCXFcaj2wj5E7N1UsPOh4g==}
     engines: {node: '>=10.4.0'}
     requiresBuild: true
+    dev: true
+
+  /chai-as-promised/7.1.1_chai@4.3.6:
+    resolution: {integrity: sha512-azL6xMoi+uxu6z4rhWQ1jbdUhOMhis2PvscD/xjLqNMkv3BPPp2JyyuTHOrf9BOosGpNQ11v6BKv/g57RXbiaA==}
+    peerDependencies:
+      chai: '>= 2.1.2 < 5'
+    dependencies:
+      chai: 4.3.6
+      check-error: 1.0.2
     dev: true
 
   /chai-bn/0.2.2_chai@4.3.6:
