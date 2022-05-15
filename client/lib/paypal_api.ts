@@ -101,7 +101,7 @@ export async function generateAccessToken(): Promise<string> {
 //generating access token for customer via authorization code
 export async function generateAccessTokenForCustomer(
   authorization: string
-): Promise<string> {
+): Promise<PayPalToken> {
   const auth: string = Buffer.from(CLIENT_ID + ":" + CLIENT_SECRET).toString(
     "base64"
   );
@@ -114,7 +114,11 @@ export async function generateAccessTokenForCustomer(
     },
   });
   const data = await response.json();
-  return data.access_token;
+  return {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    expiresIn: data.expires_in,
+  };
 }
 
 //fetching the customer data via access_token

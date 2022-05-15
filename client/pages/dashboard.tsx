@@ -1,8 +1,35 @@
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { GetServerSideProps } from "next";
+import { ParsedUrlQuery } from "querystring";
 import { useState } from "react";
-async function getServerSideProps() {}
+import {
+  generateAccessTokenForCustomer,
+  getCustomerData,
+} from "../lib/paypal_api";
 
-const Dashboard = () => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const query: ParsedUrlQuery = context.query;
+  if (Object.keys(query).length == 0 && query.constructor === Object) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  const authCode: string = query.code as string;
+  const token: PayPalToken = await generateAccessTokenForCustomer(authCode);
+  const userData: PaypalProfileProps = await getCustomerData(token.accessToken);
+
+  return {
+    props: {
+      userData,
+    },
+  };
+};
+
+const Dashboard = ({ userData }: DashBoardProps) => {
   const [amount, setAmount] = useState<number>(1);
 
   return (
