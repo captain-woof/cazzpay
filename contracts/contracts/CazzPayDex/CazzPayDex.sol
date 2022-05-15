@@ -8,6 +8,7 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../Ownable/MultiOwnable.sol";
+import "./CazzPayOracle.sol";
 
 contract CazzPayDex is MultiOwnable {
     ////////////////////////
@@ -18,6 +19,7 @@ contract CazzPayDex is MultiOwnable {
     CazzPayToken public immutable czpContract;
     IERC20 public immutable wethContract;
     uint16 public paymentTransferFeesPerc; // This would be charged from seller when receiving payments; this number would be divided by 10000 before usage; e.g, for 0.01%, this value should be 1.
+    CazzPayOracle public immutable cazzPayOracle;
 
     ////////////////////////
     // EVENTS
@@ -49,7 +51,7 @@ contract CazzPayDex is MultiOwnable {
         string randomNonce,
         address tokenUsedForPurchaseContractAddr,
         uint256 tokenAmtUsedForPurchased,
-        uint256 fiatAmountPaid
+        uint256 fiatAmountPaid /* Atomic */
     );
 
     ////////////////////////
@@ -66,13 +68,15 @@ contract CazzPayDex is MultiOwnable {
         IUniswapV2Factory _factoryContractAddr,
         IUniswapV2Router02 _routerContractAddr,
         CazzPayToken _czpContractAddr,
-        uint16 _paymentTransferFeesPerc
+        uint16 _paymentTransferFeesPerc,
+        CazzPayOracle _cazzPayOracle
     ) {
         factoryContract = _factoryContractAddr;
         routerContract = _routerContractAddr;
         wethContract = IERC20(routerContract.WETH());
         czpContract = _czpContractAddr;
         paymentTransferFeesPerc = _paymentTransferFeesPerc;
+        cazzPayOracle = _cazzPayOracle;
     }
 
     /**
@@ -87,19 +91,34 @@ contract CazzPayDex is MultiOwnable {
     }
 
     /**
-    @notice Calculates the amount after deducting fees from it
-    @param _totalAmt Total amount to deduct fees from
-    @return totalAmtWithFeesDeducted Amount after fees would be deducted
+    @notice Function to get price of a token in $CZP (atomic)
+    @dev Make sure to call this as specified here: https://github.com/redstone-finance/redstone-evm-connector#2-updating-the-interface
+    @param _tokenSymbol Symbol of the ERC20 token to know the price of
+    @return priceOfTokenInCzp Price of the token, in $CZP (or $USD), in atomic form (10^18 = 1 $CZP)
      */
-    function _calculateAmtWithFeesDeducted(uint256 _totalAmt)
-        internal
+    function getPriceOfTokenInCzp(string calldata _tokenSymbol)
+        public
         view
-        returns (uint256 totalAmtWithFeesDeducted)
+        returns (uint256)
     {
-        totalAmtWithFeesDeducted =
-            _totalAmt -
-            ((_totalAmt * _paymentTransferFeesPerc) / 10000);
-        return totalAmtWithFeesDeducted;
+        return cazzPayOracle.getPriceOfTokenInCzp(_tokenSymbol);
+    }
+
+    /**
+    @notice Function to get price of a token in $CZP (atomic)
+    @dev Make sure to call this as specified here: https://github.com/redstone-finance/redstone-evm-connector#2-updating-the-interface
+    @param _tokenContractAddr Address of the ERC20 token contract to know the price of
+    @return priceOfTokenInCzp Price of the token, in $CZP (or $USD), in atomic form (10^18 = 1 $CZP)
+     */
+    function getPriceOfTokenInCzp(address _tokenContractAddr)
+        public
+        view
+        returns (uint256)
+    {
+        return
+            cazzPayOracle.getPriceOfTokenInCzp(
+                IERC20(_tokenContractAddr).symbol()
+            );
     }
 
     /**
@@ -446,7 +465,7 @@ contract CazzPayDex is MultiOwnable {
     @param _fiatAmtToPay Fiat to transfer to seller; MUST BE ATOMIC WITH 18 decimals
     @param _deadline Deadline (unix secs) to execute this transaction
     @return otherTokenAmtUsed Amount of 'other token' used
-    @return fiatAmountPaid Amount of FIAT paid to seller (with fees deducted)
+    @return fiatAmountPaid Amount of FIAT paid to seller (with fees deducted); Atomic
     @dev Fires event BoughtWithCrypto(address payerWalletAddr, string recipientAccountId, string randomNonce, address tokenUsedForPurchaseContractAddr, uint256 tokenAmtUsedForPurchased, uint256 fiatAmountPaid);
      */
     function buyWithCryptoToken(
@@ -490,41 +509,70 @@ contract CazzPayDex is MultiOwnable {
             return (_fiatAmtToPay, fiatAmtToPayWithFeesDeducted);
         } else {
             // If 'other token' is not CZP, swapping is needed
-            /* TODO: Get price of 'other token'
 
             // Check to see if Pair exists
-            require(factoryContract.getPair(address(czpContract),_otherTokenContractAddr) != address(0), "PAIR DOES NOT EXIST");
-
-            // Check to see if enough tokens are available
-            uint256 otherTokenPriceInCzp = ...
-            require(otherTokenPriceInCzp * _otherTokenMaxAmtToPayWith >= _fiatAmtToPay, "INSUFFICIENT MAX AMOUNT");
-
-            // Transfer tokens to this contract
-            IERC20(_otherTokenContractAddr).transferFrom(msg.sender, address(this), _otherTokenMaxAmtToPayWith);
-
-            // Approve router to spend tokens
-            IERC20(_otherTokenContractAddr).approve(address(routerContract), _otherTokenMaxAmtToPayWith);
-
-            // Swap tokens
-            address[] memory swapPath = new address[
-                _otherTokenContractAddr,
-                address(czpContract)
-            ](2); 
-            (otherTokenAmtUsed, czpAmtReceived) = routerContract.swapTokensForExactTokens(
-                _fiatAmtToPay,
-                _otherTokenMaxAmtToPayWith,
-                swapPath,
-                address(this),
-                _deadline
+            require(
+                factoryContract.getPair(
+                    address(czpContract),
+                    _otherTokenContractAddr
+                ) != address(0),
+                "PAIR DOES NOT EXIST"
             );
 
+            // Check to see if enough tokens are available
+            uint256 otherTokenPriceInCzp = getPriceOfTokenInCzp(
+                _otherTokenContractAddr
+            );
+            require(
+                otherTokenPriceInCzp * _otherTokenMaxAmtToPayWith >=
+                    _fiatAmtToPay,
+                "INSUFFICIENT MAX AMOUNT"
+            );
+
+            // Transfer tokens to this contract
+            IERC20(_otherTokenContractAddr).transferFrom(
+                msg.sender,
+                address(this),
+                _otherTokenMaxAmtToPayWith
+            );
+
+            // Approve router to spend tokens
+            IERC20(_otherTokenContractAddr).approve(
+                address(routerContract),
+                _otherTokenMaxAmtToPayWith
+            );
+
+            // Swap tokens
+            address[] memory swapPath = new address[](2);
+            swapPath[0] = _otherTokenContractAddr;
+            swapPath[1] = address(czpContract);
+            (otherTokenAmtUsed, czpAmtReceived) = routerContract
+                .swapTokensForExactTokens(
+                    _fiatAmtToPay,
+                    _otherTokenMaxAmtToPayWith,
+                    swapPath,
+                    address(this),
+                    _deadline
+                );
+
+            // Calculate fee deducted amount
+            uint256 fiatAmtToPayWithFeesDeducted = _calculateAmtWithFeesDeducted(
+                    _fiatAmtToPay
+                );
+
             // Burn CZP to simulate FIAT
-            czpContract.burn(czpAmtReceived);
+            czpContract.burn(fiatAmtToPayWithFeesDeducted);
 
             // Refund unused tokens
-            if(otherTokenAmtUsed < _otherTokenMaxAmtToPayWith){
-                IERC20(_otherTokenContractAddr).approve(address (routerContract), 0);
-                IERC20(_otherTokenContractAddr).transfer(msg.sender, _otherTokenMaxAmtToPayWith - otherTokenAmtUsed);
+            if (otherTokenAmtUsed < _otherTokenMaxAmtToPayWith) {
+                IERC20(_otherTokenContractAddr).approve(
+                    address(routerContract),
+                    0
+                );
+                IERC20(_otherTokenContractAddr).transfer(
+                    msg.sender,
+                    _otherTokenMaxAmtToPayWith - otherTokenAmtUsed
+                );
             }
 
             // Emit event
@@ -534,12 +582,11 @@ contract CazzPayDex is MultiOwnable {
                 _randomNonce,
                 _otherTokenContractAddr,
                 otherTokenAmtUsed,
-                czpAmtReceived
+                fiatAmtToPayWithFeesDeducted
             );
 
             // Return
-            return(otherTokenAmtUsed, czpAmtReceived);
-            */
+            return (otherTokenAmtUsed, fiatAmtToPayWithFeesDeducted);
         }
     }
 
@@ -551,7 +598,7 @@ contract CazzPayDex is MultiOwnable {
     @param _fiatAmtToPay Fiat to transfer to seller; MUST BE ATOMIC WITH 18 decimals
     @param _deadline Deadline (unix secs) to execute this transaction
     @return ethAmtUsed Amount of ETH used
-    @return fiatAmountPaid Amount of FIAT paid to seller (with fees deducted)
+    @return fiatAmountPaid Amount of FIAT paid to seller (with fees deducted); Atomic
     @dev Fires event BoughtWithCrypto(address payerWalletAddr, string recipientAccountId, string randomNonce, address tokenUsedForPurchaseContractAddr, uint256 tokenAmtUsedForPurchased, uint256 fiatAmountPaid);
      */
     function buyWithEth(
@@ -561,26 +608,36 @@ contract CazzPayDex is MultiOwnable {
         uint256 _fiatAmtToPay,
         uint256 _deadline
     ) public payable returns (uint256 ethAmtUsed, uint256 fiatAmountPaid) {
-        /* TODO: Get price of 'other token'
-
         // Check to see if Pair exists
-        require(factoryContract.getPair(address(czpContract),address(wethContract)) != address(0), "PAIR DOES NOT EXIST");
+        require(
+            factoryContract.getPair(
+                address(czpContract),
+                address(wethContract)
+            ) != address(0),
+            "PAIR DOES NOT EXIST"
+        );
 
         // Check to see if enough tokens are available
-        uint256 ethPriceInCzp = ...
-        require(ethPriceInCzp * _ethMaxAmtToPayWith >= _fiatAmtToPay, "INSUFFICIENT MAX AMOUNT");
+        uint256 ethPriceInCzp = getPriceOfTokenInCzp("ETH");
+        require(
+            ethPriceInCzp * _ethMaxAmtToPayWith >= _fiatAmtToPay,
+            "INSUFFICIENT MAX AMOUNT"
+        );
 
         // Transfer tokens to this contract
-        wethContract.transferFrom(msg.sender, address(this), _ethMaxAmtToPayWith);
+        wethContract.transferFrom(
+            msg.sender,
+            address(this),
+            _ethMaxAmtToPayWith
+        );
 
         // Approve router to spend tokens
         wethContract.approve(address(routerContract), _ethMaxAmtToPayWith);
 
         // Swap tokens
-        address[] memory swapPath = new address[
-            address(wethContract),
-            address(czpContract)
-        ](2); 
+        address[] memory swapPath = new address[](2);
+        swapPath[0] = address(wethContract);
+        swapPath[1] = address(czpContract);
         (ethAmtUsed, czpAmtReceived) = routerContract.swapETHForExactTokens(
             _fiatAmtToPay,
             swapPath,
@@ -588,8 +645,13 @@ contract CazzPayDex is MultiOwnable {
             _deadline
         );
 
+        // Calculate fee deducted amount
+        uint256 fiatAmtToPayWithFeesDeducted = _calculateAmtWithFeesDeducted(
+            _fiatAmtToPay
+        );
+
         // Burn CZP to simulate FIAT
-        czpContract.burn(czpAmtReceived);
+        czpContract.burn(fiatAmtToPayWithFeesDeducted);
 
         // Emit event
         emit BoughtWithCrypto(
@@ -598,11 +660,30 @@ contract CazzPayDex is MultiOwnable {
             _randomNonce,
             address(wethContract),
             ethAmtUsed,
-            czpAmtReceived
+            fiatAmtToPayWithFeesDeducted
         );
 
         // Return
-        return(ethAmtUsed, czpAmtReceived);
-        */
+        return (ethAmtUsed, fiatAmtToPayWithFeesDeducted);
+    }
+
+    ///////////////////////////
+    // INTERNAL FUNCTIONS
+    ///////////////////////////
+
+    /**
+    @notice Calculates the amount after deducting fees from it
+    @param _totalAmt Total amount to deduct fees from
+    @return totalAmtWithFeesDeducted Amount after fees would be deducted
+     */
+    function _calculateAmtWithFeesDeducted(uint256 _totalAmt)
+        internal
+        view
+        returns (uint256 totalAmtWithFeesDeducted)
+    {
+        totalAmtWithFeesDeducted =
+            _totalAmt -
+            ((_totalAmt * _paymentTransferFeesPerc) / 10000);
+        return totalAmtWithFeesDeducted;
     }
 }
