@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.12;
+pragma solidity ^0.6.6;
 
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 
 contract MultiOwnable {
     // Add the library methods
@@ -18,7 +18,7 @@ contract MultiOwnable {
     }
 
     // Constructor
-    constructor() {
+    constructor() public {
         _owners.add(msg.sender);
     }
 

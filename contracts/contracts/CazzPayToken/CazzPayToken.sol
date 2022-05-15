@@ -9,7 +9,7 @@ import "../Ownable/MultiOwnable.sol";
 contract CazzPayToken is MultiOwnable, ERC20Burnable {
     // @title Constructor
     // @param _initialAmtToMint Initial amount of tokens to mint
-    constructor(uint256 _initialAmtToMint) ERC20("CazzPayToken", "CZP") {
+    constructor(uint256 _initialAmtToMint) ERC20("CazzPayToken", "CZP") public {
         _mint(msg.sender, _initialAmtToMint);
     }
 

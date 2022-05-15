@@ -2,13 +2,13 @@
 
 pragma solidity ^0.6.6;
 
-import "../CazzPayToken/CazzPayToken.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@uniswap/v2-core/contracts/interfaces/IERC20.sol";
+import "./interfaces/ICazzPayToken.sol";
 import "../Ownable/MultiOwnable.sol";
-import "./CazzPayOracle.sol";
+import "./interfaces/ICazzPayOracle.sol";
 
 contract CazzPayDex is MultiOwnable {
     ////////////////////////
@@ -16,10 +16,10 @@ contract CazzPayDex is MultiOwnable {
     ////////////////////////
     IUniswapV2Factory public immutable factoryContract;
     IUniswapV2Router02 public immutable routerContract;
-    CazzPayToken public immutable czpContract;
+    ICazzPayToken public immutable czpContract;
     IERC20 public immutable wethContract;
     uint16 public paymentTransferFeesPerc; // This would be charged from seller when receiving payments; this number would be divided by 10000 before usage; e.g, for 0.01%, this value should be 1.
-    CazzPayOracle public immutable cazzPayOracle;
+    ICazzPayOracle public immutable cazzPayOracle;
 
     ////////////////////////
     // EVENTS
@@ -74,13 +74,14 @@ contract CazzPayDex is MultiOwnable {
     constructor(
         IUniswapV2Factory _factoryContractAddr,
         IUniswapV2Router02 _routerContractAddr,
-        CazzPayToken _czpContractAddr,
-        uint16 _paymentTransferFeesPerc,
-        CazzPayOracle _cazzPayOracle
-    ) {
+        ICazzPayOracle _cazzPayOracle,
+        ICazzPayToken _czpContractAddr,
+        address _wethContractAddr,
+        uint16 _paymentTransferFeesPerc
+    ) public {
         factoryContract = _factoryContractAddr;
         routerContract = _routerContractAddr;
-        wethContract = IERC20(routerContract.WETH());
+        wethContract = IERC20(_wethContractAddr);
         czpContract = _czpContractAddr;
         paymentTransferFeesPerc = _paymentTransferFeesPerc;
         cazzPayOracle = _cazzPayOracle;
@@ -103,7 +104,7 @@ contract CazzPayDex is MultiOwnable {
     @param _tokenSymbol Symbol of the ERC20 token to know the price of
     @return priceOfTokenInCzp Price of the token, in $CZP (or $USD), in atomic form (10^18 = 1 $CZP)
      */
-    function getPriceOfTokenInCzp(string calldata _tokenSymbol)
+    function getPriceOfTokenInCzp(string memory _tokenSymbol)
         public
         view
         returns (uint256)
@@ -153,7 +154,7 @@ contract CazzPayDex is MultiOwnable {
         payable
         returns (address poolAddr)
     {
-        poolAddr = _factoryContract.createPair(
+        poolAddr = factoryContract.createPair(
             address(czpContract),
             address(wethContract)
         );
@@ -422,7 +423,7 @@ contract CazzPayDex is MultiOwnable {
         uint256 _minCzpToReceive,
         uint256 _minEthToReceive,
         uint256 _deadline
-    ) public returns (uint256 czpReceived, uint256 otherTokenReceived) {
+    ) public returns (uint256 czpReceived, uint256 ethReceived) {
         // Check if pair exists
         address pairAddr = factoryContract.getPair(
             address(czpContract),
@@ -477,8 +478,8 @@ contract CazzPayDex is MultiOwnable {
     @dev Fires event BoughtWithCrypto(address payerWalletAddr, string recipientAccountId, string randomNonce, address tokenUsedForPurchaseContractAddr, uint256 tokenAmtUsedForPurchased, uint256 fiatAmountPaid);
      */
     function buyWithCryptoToken(
-        string _recipientAccountId,
-        string _randomNonce,
+        string memory _recipientAccountId,
+        string memory _randomNonce,
         address _otherTokenContractAddr,
         uint256 _otherTokenMaxAmtToPayWith,
         uint256 _fiatAmtToPay,
@@ -554,14 +555,14 @@ contract CazzPayDex is MultiOwnable {
             address[] memory swapPath = new address[](2);
             swapPath[0] = _otherTokenContractAddr;
             swapPath[1] = address(czpContract);
-            (otherTokenAmtUsed, czpAmtReceived) = routerContract
-                .swapTokensForExactTokens(
-                    _fiatAmtToPay,
-                    _otherTokenMaxAmtToPayWith,
-                    swapPath,
-                    address(this),
-                    _deadline
-                );
+            uint256[] memory amounts = routerContract.swapTokensForExactTokens(
+                _fiatAmtToPay,
+                _otherTokenMaxAmtToPayWith,
+                swapPath,
+                address(this),
+                _deadline
+            );
+            otherTokenAmtUsed = amounts[0];
 
             // Calculate fee deducted amount
             uint256 fiatAmtToPayWithFeesDeducted = _calculateAmtWithFeesDeducted(
@@ -610,8 +611,8 @@ contract CazzPayDex is MultiOwnable {
     @dev Fires event BoughtWithCrypto(address payerWalletAddr, string recipientAccountId, string randomNonce, address tokenUsedForPurchaseContractAddr, uint256 tokenAmtUsedForPurchased, uint256 fiatAmountPaid);
      */
     function buyWithEth(
-        string _recipientAccountId,
-        string _randomNonce,
+        string memory _recipientAccountId,
+        string memory _randomNonce,
         uint256 _ethMaxAmtToPayWith,
         uint256 _fiatAmtToPay,
         uint256 _deadline
@@ -646,12 +647,13 @@ contract CazzPayDex is MultiOwnable {
         address[] memory swapPath = new address[](2);
         swapPath[0] = address(wethContract);
         swapPath[1] = address(czpContract);
-        (ethAmtUsed, czpAmtReceived) = routerContract.swapETHForExactTokens(
+        uint256[] memory amounts = routerContract.swapETHForExactTokens(
             _fiatAmtToPay,
             swapPath,
             address(this),
             _deadline
         );
+        ethAmtUsed = amounts[0];
 
         // Calculate fee deducted amount
         uint256 fiatAmtToPayWithFeesDeducted = _calculateAmtWithFeesDeducted(
@@ -745,7 +747,7 @@ contract CazzPayDex is MultiOwnable {
     {
         totalAmtWithFeesDeducted =
             _totalAmt -
-            ((_totalAmt * _paymentTransferFeesPerc) / 10000);
+            ((_totalAmt * paymentTransferFeesPerc) / 10000);
         return totalAmtWithFeesDeducted;
     }
 
@@ -787,14 +789,15 @@ contract CazzPayDex is MultiOwnable {
         address[] memory swapPath = new address[](2);
         swapPath[0] = _inputTokenContractAddr;
         swapPath[0] = _outputTokenContractAddr;
-        (inputTokenAmtUsed, outputTokenAmtReceived) = routerContract
-            .swapExactTokensForTokens(
-                _inputTokenAmt,
-                _outputTokenMinAmt,
-                swapPath,
-                msg.sender,
-                _deadline
-            );
+        uint256[] memory amounts = routerContract.swapExactTokensForTokens(
+            _inputTokenAmt,
+            _outputTokenMinAmt,
+            swapPath,
+            msg.sender,
+            _deadline
+        );
+        inputTokenAmtUsed = amounts[0];
+        outputTokenAmtReceived = amounts[1];
 
         // Emit event
         emit TokensSwapped(
