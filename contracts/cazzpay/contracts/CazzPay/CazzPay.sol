@@ -8,9 +8,9 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@uniswap/v2-core/contracts/interfaces/IERC20.sol";
 import "./interfaces/ICazzPayToken.sol";
 import "../Ownable/MultiOwnable.sol";
-import "./interfaces/ICazzPayOracle.sol";
+import "./CazzPayOracle.sol";
 
-contract CazzPayDex is MultiOwnable {
+contract CazzPay is MultiOwnable, CazzPayOracle {
     ////////////////////////
     // STORAGE
     ////////////////////////
@@ -19,7 +19,6 @@ contract CazzPayDex is MultiOwnable {
     ICazzPayToken public immutable czpContract;
     IERC20 public immutable wethContract;
     uint16 public paymentTransferFeesPerc; // This would be charged from seller when receiving payments; this number would be divided by 10000 before usage; e.g, for 0.01%, this value should be 1.
-    ICazzPayOracle public immutable cazzPayOracle;
 
     ////////////////////////
     // EVENTS
@@ -74,7 +73,6 @@ contract CazzPayDex is MultiOwnable {
     constructor(
         IUniswapV2Factory _factoryContractAddr,
         IUniswapV2Router02 _routerContractAddr,
-        ICazzPayOracle _cazzPayOracle,
         ICazzPayToken _czpContractAddr,
         address _wethContractAddr,
         uint16 _paymentTransferFeesPerc
@@ -84,7 +82,6 @@ contract CazzPayDex is MultiOwnable {
         wethContract = IERC20(_wethContractAddr);
         czpContract = _czpContractAddr;
         paymentTransferFeesPerc = _paymentTransferFeesPerc;
-        cazzPayOracle = _cazzPayOracle;
     }
 
     /**
@@ -96,37 +93,6 @@ contract CazzPayDex is MultiOwnable {
         onlyOwners
     {
         paymentTransferFeesPerc = _newPaymentTransferFeesPerc;
-    }
-
-    /**
-    @notice Function to get price of a token in $CZP (atomic)
-    @dev Make sure to call this as specified here: https://github.com/redstone-finance/redstone-evm-connector#2-updating-the-interface
-    @param _tokenSymbol Symbol of the ERC20 token to know the price of
-    @return priceOfTokenInCzp Price of the token, in $CZP (or $USD), in atomic form (10^18 = 1 $CZP)
-     */
-    function getPriceOfTokenInCzp(string memory _tokenSymbol)
-        public
-        view
-        returns (uint256)
-    {
-        return cazzPayOracle.getPriceOfTokenInCzp(_tokenSymbol);
-    }
-
-    /**
-    @notice Function to get price of a token in $CZP (atomic)
-    @dev Make sure to call this as specified here: https://github.com/redstone-finance/redstone-evm-connector#2-updating-the-interface
-    @param _tokenContractAddr Address of the ERC20 token contract to know the price of
-    @return priceOfTokenInCzp Price of the token, in $CZP (or $USD), in atomic form (10^18 = 1 $CZP)
-     */
-    function getPriceOfTokenInCzp(address _tokenContractAddr)
-        public
-        view
-        returns (uint256)
-    {
-        return
-            cazzPayOracle.getPriceOfTokenInCzp(
-                IERC20(_tokenContractAddr).symbol()
-            );
     }
 
     /**

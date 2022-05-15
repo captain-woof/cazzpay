@@ -3,6 +3,7 @@
 pragma solidity ^0.6.6;
 
 import "@openzeppelin/contracts/cryptography/ECDSA.sol";
+import "@uniswap/v2-core/contracts/interfaces/IERC20.sol";
 
 contract CazzPayOracle {
     ////////////////////////////
@@ -10,7 +11,8 @@ contract CazzPayOracle {
     ////////////////////////////
 
     /**
-    @notice Function to get price of coin
+    @notice Function to get price of a token in $CZP (atomic)
+    @dev Make sure to call this as specified here: https://github.com/redstone-finance/redstone-evm-connector#2-updating-the-interface
     @param _tokenSymbol Symbol of the ERC20 token to know the price of
     @return priceOfTokenInCzp Price of the token, in $CZP (or $USD), in atomic form (10^18 = 1 $CZP)
      */
@@ -20,6 +22,22 @@ contract CazzPayOracle {
         returns (uint256)
     {
         return (getPriceFromMsg(_stringToBytes32(_tokenSymbol)) * (10**10));
+    }
+
+    /**
+    @notice Function to get price of a token in $CZP (atomic)
+    @dev Make sure to call this as specified here: https://github.com/redstone-finance/redstone-evm-connector#2-updating-the-interface
+    @param _tokenContractAddr Address of the ERC20 token contract to know the price of
+    @return priceOfTokenInCzp Price of the token, in $CZP (or $USD), in atomic form (10^18 = 1 $CZP)
+     */
+    function getPriceOfTokenInCzp(address _tokenContractAddr)
+        public
+        view
+        returns (uint256)
+    {
+        return (getPriceFromMsg(
+            _stringToBytes32(IERC20(_tokenContractAddr).symbol())
+        ) * (10**10));
     }
 
     ////////////////////////////
@@ -32,7 +50,6 @@ contract CazzPayOracle {
     function isSignerAuthorized(address _receivedSigner)
         public
         pure
-        virtual
         returns (bool)
     {
         return _receivedSigner == 0x0C39486f770B26F5527BBBf942726537986Cd7eb; // Redstone Demo signer
@@ -66,8 +83,8 @@ contract CazzPayOracle {
     //////////////////////////////////////////////////////
     using ECDSA for bytes32;
 
-    uint256 constant private _MAX_DATA_TIMESTAMP_DELAY = 3 * 60; // 3 minutes
-    uint256 constant private _MAX_BLOCK_TIMESTAMP_DELAY = 15; // 15 seconds
+    uint256 private constant _MAX_DATA_TIMESTAMP_DELAY = 3 * 60; // 3 minutes
+    uint256 private constant _MAX_BLOCK_TIMESTAMP_DELAY = 15; // 15 seconds
 
     /* ========== VIRTUAL FUNCTIONS (MAY BE OVERRIDEN IN CHILD CONTRACTS) ========== */
 
