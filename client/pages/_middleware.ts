@@ -11,7 +11,7 @@ export async function middleware(req: NextRequest) {
   /** 1. if the url pathname is related to login page - pass through
    *  2. if the user is authenticated with correct token - pass through
    * */
-  const loginUrl = "/";
+  const loginUrl: string = "/";
   if (pathname.includes(loginUrl) || token) {
     return NextResponse.next();
   }
