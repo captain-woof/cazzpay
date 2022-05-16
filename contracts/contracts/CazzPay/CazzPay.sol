@@ -38,17 +38,17 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
 
     event AddedLiquidityToCzpAndOtherTokenPair(
         address indexed otherTokenContractAddr,
-        address liquidityProviderAddr,
-        uint256 indexed czpAmtAdded,
-        uint256 indexed otherTokenAmtAdded,
+        address indexed liquidityProviderAddr,
+        uint256 czpAmtAdded,
+        uint256 otherTokenAmtAdded,
         uint256 liquidityTokensMinted
     );
 
     event WithdrawnLiquidityFromCzpAndOtherTokenPair(
         address indexed otherTokenContractAddr,
-        address liquidityProviderAddr,
-        uint256 indexed czpAmtWithdrawn,
-        uint256 indexed otherTokenAmtWithdrawn,
+        address indexed liquidityProviderAddr,
+        uint256 czpAmtWithdrawn,
+        uint256 otherTokenAmtWithdrawn,
         uint256 liquidityTokensSubmitted
     );
 
@@ -144,7 +144,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @param _otherTokenContractAddr Address of the other token contract
     @return poolAddr Address of the pool
      */
-    function getCzpAndOtherTokenPoolAddr(address _otherTokenContractAddr)
+    function getCzpAndOtherTokenPairAddr(address _otherTokenContractAddr)
         public
         view
         returns (address poolAddr)
@@ -200,6 +200,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @return czpAmtAdded Amount of CZP added
     @return otherTokenAmtAdded Amount of other token added
     @return liquidityTokensMinted Amount of LP tokens minted to caller
+    @dev Emits event AddedLiquidityToCzpAndOtherTokenPair(address indexed otherTokenContractAddr, address indexed liquidityProviderAddr, uint256 czpAmtAdded, uint256 otherTokenAmtAdded, uint256 liquidityTokensMinted);
      */
     function addLiquidityToCzpAndOtherTokenPair(
         address _otherTokenContractAddr,
@@ -283,7 +284,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @return czpAmtAdded Amount of CZP added
     @return ethAmtAdded Amount of ETH added
     @return liquidityTokensMinted Amount of LP tokens minted to caller
-    @dev Emits event AddedLiquidityToCzpAndOtherTokenPair(address otherTokenContractAddr, address liquidityProviderAddr, uint256 czpAmtAdded, uint256 otherTokenAmtAdded, uint256 liquidityTokensMinted);
+    @dev Emits event AddedLiquidityToCzpAndOtherTokenPair(address indexed otherTokenContractAddr, address indexed liquidityProviderAddr, uint256 czpAmtAdded, uint256 otherTokenAmtAdded, uint256 liquidityTokensMinted);
      */
     function addLiquidityToCzpAndEthPair(
         uint256 _czpAmtToDeposit,
@@ -340,6 +341,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @param _minCzpToReceive Minimum amount of CZP to receieve
     @param _minOtherTokenToReceive Minimum amount of other tokens to receieve
     @param _deadline Deadline (unix secs) to execute this
+    @dev Emits event WithdrawnLiquidityFromCzpAndOtherTokenPair(address indexed otherTokenContractAddr, address indexed liquidityProviderAddr, uint256 czpAmtWithdrawn, uint256 otherTokenAmtWithdrawn, uint256 liquidityTokensSubmitted);
      */
     function withdrawLiquidityForCzpAndOtherToken(
         address _otherTokenContractAddr,
@@ -396,6 +398,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @param _minCzpToReceive Minimum amount of CZP to receieve
     @param _minEthToReceive Minimum amount of ETH to receieve
     @param _deadline Deadline (unix secs) to execute this
+    @dev Emits event WithdrawnLiquidityFromCzpAndOtherTokenPair(address indexed otherTokenContractAddr, address indexed liquidityProviderAddr, uint256 czpAmtWithdrawn, uint256 otherTokenAmtWithdrawn, uint256 liquidityTokensSubmitted);
      */
     function withdrawLiquidityForCzpAndEth(
         uint256 _liquidityToWithdraw,

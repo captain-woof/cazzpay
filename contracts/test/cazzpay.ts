@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { CazzPay, CazzPayToken, IERC20, UniswapFactory, UniswapRouter, UniswapV2Factory, UniswapV2Router02 } from "../typechain";
+import { CazzPay, CazzPayToken, IERC20, IUniswapV2Pair, UniswapFactory, UniswapRouter, UniswapV2Factory, UniswapV2Router02 } from "../typechain";
 import { TestCoin } from "../typechain/TestCoin";
 import { WrapperBuilder } from "redstone-evm-connector";
 import { BigNumber, Contract, Signer } from "ethers";
@@ -10,7 +10,7 @@ import UniswapWETHArtifact from "@uniswap/v2-periphery/build/WETH9.json";
 // For Chai
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { AddedLiquidityToCzpAndOtherTokenPairEvent, CreatedPairWithCzpAndOtherTokenEvent } from "../typechain/CazzPay";
+import { AddedLiquidityToCzpAndOtherTokenPairEvent, CreatedPairWithCzpAndOtherTokenEvent, WithdrawnLiquidityFromCzpAndOtherTokenPairEvent } from "../typechain/CazzPay";
 const { assert, expect } = chai.use(chaiAsPromised);
 
 describe("CazzPay should function correctly", async () => {
@@ -108,7 +108,7 @@ describe("CazzPay should function correctly", async () => {
 
     it("CazzPay should correctly return pairs on querying", async () => {
         const { pairAddr: czpAndTestCoinPairAddrExpected } = await createPair();
-        expect(cazzPayContract.getCzpAndOtherTokenPoolAddr(testCoinContract.address)).eventually.equal(czpAndTestCoinPairAddrExpected, "Incorrect pair address on query!");
+        expect(cazzPayContract.getCzpAndOtherTokenPairAddr(testCoinContract.address)).eventually.equal(czpAndTestCoinPairAddrExpected, "Incorrect pair address on query!");
 
         const { pairAddr: czpAndWethPairAddrExpected } = await createPair(wethContract);
         const allPairs = await cazzPayContract.getAllPairsWithCzpAndOtherToken();
@@ -121,7 +121,6 @@ describe("CazzPay should function correctly", async () => {
         const czpLiquidityToProvide = "100";
         const tstLiquidityToProvide = "10";
 
-        await createPair();
         const { czpAmtAdded, otherTokenAmtAdded, liquidityTokensMinted } = await addLiquidityToCzpAndTst(czpLiquidityToProvide, tstLiquidityToProvide);
 
         assert.isTrue(czpAmtAdded.eq(ethers.utils.parseEther(czpLiquidityToProvide)), "Incorrect amount of $CZP liquidity provided!");
@@ -138,6 +137,34 @@ describe("CazzPay should function correctly", async () => {
         assert.isTrue(czpAmtAdded.eq(ethers.utils.parseEther(czpLiquidityToProvide)), "Incorrect amount of $CZP liquidity provided!");
         assert.isTrue(otherTokenAmtAdded.eq(ethers.utils.parseEther(ethLiquidityToProvide)), "Incorrect amount of $TST liquidity provided!");
         assert.isTrue(isValueInPercRange(liquidityTokensMinted, BigNumber.from("45000000000000000000"), 2), "Incorrect number of LP tokens minted!");
+    });
+
+    it("CazzPay should handle CZP-OtherToken liquidity withdraw correctly", async () => {
+        const czpLiquidityToProvide = "100";
+        const tstLiquidityToProvide = "10";
+
+        const { czpAmtAdded, otherTokenAmtAdded, liquidityTokensMinted } = await addLiquidityToCzpAndTst(czpLiquidityToProvide, tstLiquidityToProvide);
+        const { czpAmtWithdrawn, liquidityTokensSubmitted, otherTokenAmtWithdrawn } = await withdrawLiquidityFromCzpAndTst(liquidityTokensMinted, getValReduced(czpAmtAdded, 2), getValReduced(otherTokenAmtAdded, 2));
+
+        assert.isTrue(isValueInPercRange(czpAmtWithdrawn, czpAmtAdded, 2), "CZP added was not recovered when withdrawing liquidity!");
+        assert.isTrue(isValueInPercRange(otherTokenAmtWithdrawn, otherTokenAmtAdded, 2), "TST added was not recovered when withdrawing liquidity!");
+        assert.isTrue(isValueInPercRange(liquidityTokensSubmitted, liquidityTokensMinted, 2), "Incorrect number of LP tokens submitted when withdrawing liquidity!");
+    });
+
+    it("CazzPay should handle CZP-ETH liquidity withdraw correctly", async () => {
+        const czpLiquidityToProvide = "2025";
+        const ethLiquidityToProvide = "1";
+
+        const { czpAmtAdded, otherTokenAmtAdded: ethTokenAmtAdded, liquidityTokensMinted } = await addLiquidityToCzpAndEth(czpLiquidityToProvide, ethLiquidityToProvide);
+        const signerBalanceBeforeWithdraw = await signers[0].getBalance();
+
+        const { czpAmtWithdrawn, liquidityTokensSubmitted, ethTokenAmtWithdrawn } = await withdrawLiquidityFromCzpAndEth(liquidityTokensMinted, getValReduced(czpAmtAdded, 2), getValReduced(ethTokenAmtAdded, 2));
+        const signerBalanceAfterWithdraw = await signers[0].getBalance();
+
+        assert.isTrue(isValueInPercRange(czpAmtWithdrawn, czpAmtAdded, 2), "CZP added was not recovered when withdrawing liquidity!");
+        assert.isTrue(isValueInPercRange(ethTokenAmtWithdrawn, ethTokenAmtAdded, 2), "ETH added was not recovered when withdrawing liquidity!");
+        assert.isTrue(isValueInPercRange(signerBalanceAfterWithdraw.sub(signerBalanceBeforeWithdraw), ethers.utils.parseEther(ethLiquidityToProvide), 2), "ETH added was not recovered when withdrawing liquidity!");
+        assert.isTrue(isValueInPercRange(liquidityTokensSubmitted, liquidityTokensMinted, 2), "Incorrect number of LP tokens submitted when withdrawing liquidity!");
     });
 
     //////////////////////////
@@ -209,6 +236,38 @@ describe("CazzPay should function correctly", async () => {
             otherTokenContractAddr,
             liquidityProviderAddr,
             liquidityTokensMinted
+        }
+    }
+
+    const withdrawLiquidityFromCzpAndTst = async (liquidityToWithdraw: BigNumber, minCzpToReceive: BigNumber, minOtherTokenToReceive: BigNumber) => {
+        const pairContractAddr = await cazzPayContract.getCzpAndOtherTokenPairAddr(testCoinContract.address);
+        const pairContract = await ethers.getContractAt("UniswapV2Pair", pairContractAddr, signers[0]);
+        await pairContract.approve(cazzPayContract.address, liquidityToWithdraw);
+
+        const txn = await cazzPayContract.connect(signers[0]).withdrawLiquidityForCzpAndOtherToken(testCoinContract.address, liquidityToWithdraw, minCzpToReceive, minOtherTokenToReceive, getDeadline());
+        const { events } = await txn.wait();
+        const { czpAmtWithdrawn, otherTokenAmtWithdrawn, liquidityTokensSubmitted } = (events?.find(({ event }) => (event === "WithdrawnLiquidityFromCzpAndOtherTokenPair")) as WithdrawnLiquidityFromCzpAndOtherTokenPairEvent).args;
+
+        return {
+            czpAmtWithdrawn,
+            otherTokenAmtWithdrawn,
+            liquidityTokensSubmitted
+        }
+    }
+
+    const withdrawLiquidityFromCzpAndEth = async (liquidityToWithdraw: BigNumber, minCzpToReceive: BigNumber, minOtherTokenToReceive: BigNumber) => {
+        const pairContractAddr = await cazzPayContract.getCzpAndOtherTokenPairAddr(wethContract.address);
+        const pairContract = await ethers.getContractAt("UniswapV2Pair", pairContractAddr, signers[0]);
+        await pairContract.approve(cazzPayContract.address, liquidityToWithdraw);
+
+        const txn = await cazzPayContract.connect(signers[0]).withdrawLiquidityForCzpAndEth(liquidityToWithdraw, minCzpToReceive, minOtherTokenToReceive, getDeadline());
+        const { events } = await txn.wait();
+        const { czpAmtWithdrawn, otherTokenAmtWithdrawn: ethTokenAmtWithdrawn, liquidityTokensSubmitted } = (events?.find(({ event }) => (event === "WithdrawnLiquidityFromCzpAndOtherTokenPair")) as WithdrawnLiquidityFromCzpAndOtherTokenPairEvent).args;
+
+        return {
+            czpAmtWithdrawn,
+            ethTokenAmtWithdrawn,
+            liquidityTokensSubmitted
         }
     }
 });
