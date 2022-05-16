@@ -21,6 +21,14 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     uint16 public paymentTransferFeesPerc; // This would be charged from seller when receiving payments; this number would be divided by 10000 before usage; e.g, for 0.01%, this value should be 1.
 
     ////////////////////////
+    // MODIFIERS
+    ////////////////////////
+    modifier withinDeadline(uint256 _deadline) {
+        require(block.timestamp <= _deadline, "DEADLINE CROSSED");
+        _;
+    }
+
+    ////////////////////////
     // EVENTS
     ////////////////////////
     event CreatedPairWithCzpAndOtherToken(
@@ -29,33 +37,33 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     );
 
     event AddedLiquidityToCzpAndOtherTokenPair(
-        address otherTokenContractAddr,
+        address indexed otherTokenContractAddr,
         address liquidityProviderAddr,
-        uint256 czpAmtAdded,
-        uint256 otherTokenAmtAdded,
+        uint256 indexed czpAmtAdded,
+        uint256 indexed otherTokenAmtAdded,
         uint256 liquidityTokensMinted
     );
 
     event WithdrawnLiquidityFromCzpAndOtherTokenPair(
-        address otherTokenContractAddr,
+        address indexed otherTokenContractAddr,
         address liquidityProviderAddr,
-        uint256 czpAmtWithdrawn,
-        uint256 otherTokenAmtWithdrawn,
+        uint256 indexed czpAmtWithdrawn,
+        uint256 indexed otherTokenAmtWithdrawn,
         uint256 liquidityTokensSubmitted
     );
 
     event BoughtWithCrypto(
-        address payerWalletAddr,
-        string recipientAccountId,
-        string randomNonce,
+        address indexed payerWalletAddr,
+        string indexed recipientAccountId,
+        string indexed randomNonce,
         address tokenUsedForPurchaseContractAddr,
         uint256 tokenAmtUsedForPurchased,
         uint256 fiatAmountPaid /* Atomic */
     );
 
     event TokensSwapped(
-        address inputTokenContractAddr,
-        address outputTokenContractAddr,
+        address indexed inputTokenContractAddr,
+        address indexed outputTokenContractAddr,
         uint256 inputTokenAmt,
         uint256 outputTokenAmt
     );
@@ -275,6 +283,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @return czpAmtAdded Amount of CZP added
     @return ethAmtAdded Amount of ETH added
     @return liquidityTokensMinted Amount of LP tokens minted to caller
+    @dev Emits event AddedLiquidityToCzpAndOtherTokenPair(address otherTokenContractAddr, address liquidityProviderAddr, uint256 czpAmtAdded, uint256 otherTokenAmtAdded, uint256 liquidityTokensMinted);
      */
     function addLiquidityToCzpAndEthPair(
         uint256 _czpAmtToDeposit,
@@ -298,14 +307,14 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
 
         // Add liquidity with CZP and ETH
         (czpAmtAdded, ethAmtAdded, liquidityTokensMinted) = routerContract
-            .addLiquidityETH(
-                address(czpContract),
-                _czpAmtToDeposit,
-                _czpMinAmtToDeposit,
-                _ethMinAmtToDeposit,
-                msg.sender,
-                _deadline
-            );
+            .addLiquidityETH{value: msg.value}(
+            address(czpContract),
+            _czpAmtToDeposit,
+            _czpMinAmtToDeposit,
+            _ethMinAmtToDeposit,
+            msg.sender,
+            _deadline
+        );
 
         // Refund remaining CZP
         if (czpAmtAdded < _czpAmtToDeposit) {
