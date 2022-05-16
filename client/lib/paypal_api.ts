@@ -108,7 +108,7 @@ export async function generateAccessTokenForCustomer(
   const url = `${base}/v1/oauth2/token`;
   const response = await fetch(url, {
     method: "post",
-    body: `grant_type=authorization&code=${authorization}`,
+    body: `grant_type=authorization_code&code=${authorization}`,
     headers: {
       Authorization: `Basic ${auth}`,
     },
