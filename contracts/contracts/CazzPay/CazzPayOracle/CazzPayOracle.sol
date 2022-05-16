@@ -2,14 +2,38 @@
 
 pragma solidity ^0.6.6;
 
-//import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 import "./ECDSA.sol";
 import "@uniswap/v2-core/contracts/interfaces/IERC20.sol";
+import "../../Ownable/MultiOwnable.sol";
 
-contract CazzPayOracle {
+contract CazzPayOracle is MultiOwnable {
+    ////////////////////////////
+    // STORAGE
+    ////////////////////////////
+    address public approvedPriceFeedSigner;
+
     ////////////////////////////
     // FUNCTIONS
     ////////////////////////////
+
+    /**
+    @notice Constructor for contract
+    @param _approvedPriceFeedSigner Authorised signer to provide price feeds
+     */
+    constructor(address _approvedPriceFeedSigner) public {
+        approvedPriceFeedSigner = _approvedPriceFeedSigner;
+    }
+
+    /**
+    @notice Function to change authorised signer to provide price feeds
+    @param _newApprovedPriceFeedSigner Authorised signer to provide price feeds
+     */
+    function setApprovedPriceFeedSigner(address _newApprovedPriceFeedSigner)
+        public
+        onlyOwners
+    {
+        approvedPriceFeedSigner = _newApprovedPriceFeedSigner;
+    }
 
     /**
     @notice Function to get price of a token in $CZP (atomic)
@@ -50,10 +74,10 @@ contract CazzPayOracle {
      */
     function isSignerAuthorized(address _receivedSigner)
         public
-        pure
+        view
         returns (bool)
     {
-        return _receivedSigner == 0x0C39486f770B26F5527BBBf942726537986Cd7eb; // Redstone Demo signer
+        return _receivedSigner == approvedPriceFeedSigner; // Redstone Demo signer
     }
 
     ////////////////////////////

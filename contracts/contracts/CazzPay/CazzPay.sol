@@ -8,7 +8,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@uniswap/v2-core/contracts/interfaces/IERC20.sol";
 import "./interfaces/ICazzPayToken.sol";
 import "../Ownable/MultiOwnable.sol";
-import "./CazzPayOracle.sol";
+import "./CazzPayOracle/CazzPayOracle.sol";
 
 contract CazzPay is MultiOwnable, CazzPayOracle {
     ////////////////////////
@@ -69,14 +69,16 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @param _routerContractAddr Address of the router contract
     @param _czpContractAddr Address of CZP contract
     @param _paymentTransferFeesPerc This would be charged from seller when receiving payments; this number would be divided by 10000 before usage; e.g, for 0.01%, this value should be 1.
+    @param _approvedPriceFeedSigner Authorised signer to provide price feeds
      */
     constructor(
         IUniswapV2Factory _factoryContractAddr,
         IUniswapV2Router02 _routerContractAddr,
         ICazzPayToken _czpContractAddr,
         address _wethContractAddr,
-        uint16 _paymentTransferFeesPerc
-    ) public {
+        uint16 _paymentTransferFeesPerc,
+        address _approvedPriceFeedSigner
+    ) public CazzPayOracle(_approvedPriceFeedSigner) {
         factoryContract = _factoryContractAddr;
         routerContract = _routerContractAddr;
         wethContract = IERC20(_wethContractAddr);

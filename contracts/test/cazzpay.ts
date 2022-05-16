@@ -37,10 +37,10 @@ describe("CazzPay should function correctly", async () => {
         uniswapRouterContract = await (await (await ethers.getContractFactory("UniswapRouter")).deploy(uniswapFactoryContract.address, wethContract.address)).deployed();
 
         // Deploy CazzPay
-        cazzPayContract = await (await (await ethers.getContractFactory("CazzPay")).deploy(uniswapFactoryContract.address, uniswapRouterContract.address, czpTokenContract.address, wethContract.address, 100)).deployed();
+        cazzPayContract = await (await (await ethers.getContractFactory("CazzPay")).deploy(uniswapFactoryContract.address, uniswapRouterContract.address, czpTokenContract.address, wethContract.address, 100, "0xFE71e9691B9524BC932C23d0EeD5c9CE41161884")).deployed();
         cazzPayContract = WrapperBuilder
-            .wrapLite(cazzPayContract)
-            .usingPriceFeed("redstone", { asset: "ETH" });
+            .mockLite(cazzPayContract)
+            .using({ ETH: 2000, CZP: 1, TST: 10, WETH: 2000 });
     });
 
     ///////////////////////////////
@@ -59,5 +59,6 @@ describe("CazzPay should function correctly", async () => {
     it("CazzPayOracle should work correctly", async () => {
         const ethPriceInCzp = await cazzPayContract.getPriceOfTokenInCzpWithTokenSymbol("ETH");
         assert.isTrue(BigNumber.isBigNumber(ethPriceInCzp), "CazzPayOracle did not return valid data!");
+        assert.isTrue(ethPriceInCzp.eq(ethers.utils.parseEther("2000")), "Token price came incorrect!");
     });
 });
