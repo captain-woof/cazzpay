@@ -24,8 +24,8 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     // EVENTS
     ////////////////////////
     event CreatedPairWithCzpAndOtherToken(
-        address poolAddr,
-        address otherTokenContractAddr
+        address indexed pairAddr,
+        address indexed otherTokenContractAddr
     );
 
     event AddedLiquidityToCzpAndOtherTokenPair(
@@ -100,33 +100,35 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     /**
     @notice Creates a pair with $CZP and another token
     @param _otherTokenContractAddr Contract address of the other token to form pool with
-    @return poolAddr Address of the pair created
+    @return pairAddr Address of the pair created
     */
     function createPairWithCzpAndOtherToken(address _otherTokenContractAddr)
         public
-        returns (address poolAddr)
+        returns (address pairAddr)
     {
-        poolAddr = factoryContract.createPair(
+        pairAddr = factoryContract.createPair(
             address(czpContract),
             _otherTokenContractAddr
         );
-        emit CreatedPairWithCzpAndOtherToken(poolAddr, _otherTokenContractAddr);
+        require(pairAddr != address(0), "PAIR NOT CREATED");
+        emit CreatedPairWithCzpAndOtherToken(pairAddr, _otherTokenContractAddr);
     }
 
     /**
     @notice Creates a pair with $CZP and ETH
-    @return poolAddr Address of the pair created
+    @return pairAddr Address of the pair created
     */
     function createPairWithCzpAndEth()
         public
         payable
-        returns (address poolAddr)
+        returns (address pairAddr)
     {
-        poolAddr = factoryContract.createPair(
+        pairAddr = factoryContract.createPair(
             address(czpContract),
             address(wethContract)
         );
-        emit CreatedPairWithCzpAndOtherToken(poolAddr, address(wethContract));
+        require(pairAddr != address(0), "PAIR NOT CREATED");
+        emit CreatedPairWithCzpAndOtherToken(pairAddr, address(wethContract));
     }
 
     /**
