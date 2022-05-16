@@ -17,7 +17,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-
   const authCode: string = query.code as string;
   const token: PayPalToken = await generateAccessTokenForCustomer(authCode);
   const userData: PaypalProfileProps = await getCustomerData(token.accessToken);
@@ -34,6 +33,9 @@ const Dashboard = ({ userData }: DashBoardProps) => {
 
   return (
     <div>
+      <p>{userData.email}</p>
+      <p>{userData.name}</p>
+      <p>{userData.paypalId}</p>
       <PayPalScriptProvider
         options={{
           "client-id": process.env.NEXT_PUBLIC_CLIENT_ID as string,
