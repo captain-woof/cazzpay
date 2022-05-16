@@ -64,10 +64,12 @@ describe("CazzPay should function correctly", async () => {
         assert.isTrue(ethPriceInCzp.eq(ethers.utils.parseEther("2000")), "Token price came incorrect!");
     });
 
-    it("CazzPay should correctly create pairs", async () => {
+    it("CazzPay should correctly create a pair, and should return it on querying", async () => {
         const { otherTokenContractAddr, pairAddr } = await createPair();
         assert.equal(otherTokenContractAddr, testCoinContract.address, "Other token contract address is not correct!");
         assert.isString(pairAddr, "Invalid pair address returned!");
+
+        expect(cazzPayContract.getCzpAndOtherTokenPoolAddr(testCoinContract.address)).eventually.equal(pairAddr, "Incorrect pair address on query!");
     });
 
     //////////////////////////
