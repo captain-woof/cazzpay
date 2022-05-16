@@ -3,7 +3,7 @@ import { CazzPay, CazzPayToken, UniswapFactory, UniswapRouter } from "../typecha
 import { TestCoin } from "../typechain/TestCoin";
 import { WETH } from "../typechain/WETH";
 import { WrapperBuilder } from "redstone-evm-connector";
-import { BigNumber } from "ethers";
+import { BigNumber, Contract } from "ethers";
 
 // For Chai
 import chai from "chai";
@@ -22,7 +22,7 @@ describe("CazzPay should function correctly", async () => {
     let cazzPayContractRedstoneWrapped: CazzPay;
 
     ///////////////////////////////
-    // BEFORE HOOK
+    // BEFORE HOOKS
     ///////////////////////////////
     before(async () => {
         // Deploy CZP
@@ -33,7 +33,9 @@ describe("CazzPay should function correctly", async () => {
 
         // Deploy WETH
         wethContract = await (await (await ethers.getContractFactory("WETH")).deploy()).deployed();
+    });
 
+    beforeEach(async () => {
         // Deploy Uniswap's contracts
         uniswapFactoryContract = await (await (await ethers.getContractFactory("UniswapFactory")).deploy()).deployed();
         uniswapRouterContract = await (await (await ethers.getContractFactory("UniswapRouter")).deploy(uniswapFactoryContract.address, wethContract.address)).deployed();
@@ -64,20 +66,29 @@ describe("CazzPay should function correctly", async () => {
         assert.isTrue(ethPriceInCzp.eq(ethers.utils.parseEther("2000")), "Token price came incorrect!");
     });
 
-    it("CazzPay should correctly create a pair, and should return it on querying", async () => {
+    it("CazzPay should correctly create a pair", async () => {
         const { otherTokenContractAddr, pairAddr } = await createPair();
         assert.equal(otherTokenContractAddr, testCoinContract.address, "Other token contract address is not correct!");
         assert.isString(pairAddr, "Invalid pair address returned!");
+    });
 
-        expect(cazzPayContract.getCzpAndOtherTokenPoolAddr(testCoinContract.address)).eventually.equal(pairAddr, "Incorrect pair address on query!");
+    it("CazzPay should correctly return pairs on querying", async () => {
+        const { pairAddr: czpAndTestCoinPairAddrExpected } = await createPair();
+        expect(cazzPayContract.getCzpAndOtherTokenPoolAddr(testCoinContract.address)).eventually.equal(czpAndTestCoinPairAddrExpected, "Incorrect pair address on query!");
+
+        const { pairAddr: czpAndWethPairAddrExpected } = await createPair(wethContract);
+        const allPairs = await cazzPayContract.getAllPairsWithCzpAndOtherToken();
+        assert.lengthOf(allPairs, 2, "Incorrect number of pairs returned!");
+        assert.equal(allPairs[0], czpAndTestCoinPairAddrExpected, "Incorrect pair address returned!");
+        assert.equal(allPairs[1], czpAndWethPairAddrExpected, "Incorrect pair address returned!");
     });
 
     //////////////////////////
     // HELPERS
     //////////////////////////
 
-    const createPair = async () => {
-        const tx = await cazzPayContract.createPairWithCzpAndOtherToken(testCoinContract.address);
+    const createPair = async (otherTokenContract: Contract = testCoinContract) => {
+        const tx = await cazzPayContract.createPairWithCzpAndOtherToken(otherTokenContract.address);
         const rcpt = await tx.wait();
         const { pairAddr, otherTokenContractAddr } = (rcpt?.events?.find(({ event }) => (event === "CreatedPairWithCzpAndOtherToken")) as CreatedPairWithCzpAndOtherTokenEvent).args;
         return { pairAddr, otherTokenContractAddr };
