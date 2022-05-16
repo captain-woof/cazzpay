@@ -2,7 +2,8 @@
 
 pragma solidity ^0.6.6;
 
-import "@openzeppelin/contracts/cryptography/ECDSA.sol";
+//import "@openzeppelin/contracts/cryptography/ECDSA.sol";
+import "./ECDSA.sol";
 import "@uniswap/v2-core/contracts/interfaces/IERC20.sol";
 
 contract CazzPayOracle {
@@ -16,7 +17,7 @@ contract CazzPayOracle {
     @param _tokenSymbol Symbol of the ERC20 token to know the price of
     @return priceOfTokenInCzp Price of the token, in $CZP (or $USD), in atomic form (10^18 = 1 $CZP)
      */
-    function getPriceOfTokenInCzp(string memory _tokenSymbol)
+    function getPriceOfTokenInCzpWithTokenSymbol(string memory _tokenSymbol)
         public
         view
         returns (uint256)
@@ -30,7 +31,7 @@ contract CazzPayOracle {
     @param _tokenContractAddr Address of the ERC20 token contract to know the price of
     @return priceOfTokenInCzp Price of the token, in $CZP (or $USD), in atomic form (10^18 = 1 $CZP)
      */
-    function getPriceOfTokenInCzp(address _tokenContractAddr)
+    function getPriceOfTokenInCzpWithTokenAddress(address _tokenContractAddr)
         public
         view
         returns (uint256)

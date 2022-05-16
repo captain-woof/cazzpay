@@ -57,7 +57,7 @@ describe("CazzPay should function correctly", async () => {
     });
 
     it("CazzPayOracle should work correctly", async () => {
-        const ethPriceInCzp = await cazzPayContract["getPriceOfTokenInCzp(string)"]("ETH");
+        const ethPriceInCzp = await cazzPayContract.getPriceOfTokenInCzpWithTokenSymbol("ETH");
         assert.isTrue(BigNumber.isBigNumber(ethPriceInCzp), "CazzPayOracle did not return valid data!");
     });
 });

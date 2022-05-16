@@ -495,7 +495,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             );
 
             // Check to see if enough tokens are available
-            uint256 otherTokenPriceInCzp = getPriceOfTokenInCzp(
+            uint256 otherTokenPriceInCzp = getPriceOfTokenInCzpWithTokenAddress(
                 _otherTokenContractAddr
             );
             require(
@@ -593,7 +593,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         );
 
         // Check to see if enough tokens are available
-        uint256 ethPriceInCzp = getPriceOfTokenInCzp("ETH");
+        uint256 ethPriceInCzp = getPriceOfTokenInCzpWithTokenSymbol("ETH");
         require(
             ethPriceInCzp * _ethMaxAmtToPayWith >= _fiatAmtToPay,
             "INSUFFICIENT MAX AMOUNT"
