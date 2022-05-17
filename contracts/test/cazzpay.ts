@@ -6,11 +6,12 @@ import { BigNumber, Contract, Signer } from "ethers";
 import UniswapFactoryArtifact from "@uniswap/v2-core/build/UniswapV2Factory.json";
 import UniswapRouterArtifact from "@uniswap/v2-periphery/build/UniswapV2Router02.json";
 import UniswapWETHArtifact from "@uniswap/v2-periphery/build/WETH9.json";
+import BN from "bignumber.js";
 
 // For Chai
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { AddedLiquidityToCzpAndOtherTokenPairEvent, CreatedPairWithCzpAndOtherTokenEvent, WithdrawnLiquidityFromCzpAndOtherTokenPairEvent } from "../typechain/CazzPay";
+import { AddedLiquidityToCzpAndOtherTokenPairEvent, BoughtWithCryptoEvent, CreatedPairWithCzpAndOtherTokenEvent, WithdrawnLiquidityFromCzpAndOtherTokenPairEvent } from "../typechain/CazzPay";
 const { assert, expect } = chai.use(chaiAsPromised);
 
 describe("CazzPay should function correctly", async () => {
@@ -28,6 +29,12 @@ describe("CazzPay should function correctly", async () => {
     // BEFORE HOOKS
     ///////////////////////////////
     before(async () => {
+        // Get signers
+        signers = await ethers.getSigners();
+    });
+
+    beforeEach(async () => {
+
         // Deploy CZP
         czpTokenContract = await (await (await ethers.getContractFactory("CazzPayToken")).deploy(ethers.utils.parseEther("10000000"))).deployed();
 
@@ -46,11 +53,6 @@ describe("CazzPay should function correctly", async () => {
             sourceName: ""
         })).deploy()).deployed() as IERC20;
 
-        // Get signers
-        signers = await ethers.getSigners();
-    });
-
-    beforeEach(async () => {
         // Deploy Uniswap's contracts
         uniswapFactoryContract = await (await (await ethers.getContractFactoryFromArtifact({
             _format: "",
@@ -167,6 +169,36 @@ describe("CazzPay should function correctly", async () => {
         assert.isTrue(isValueInPercRange(liquidityTokensSubmitted, liquidityTokensMinted, 2), "Incorrect number of LP tokens submitted when withdrawing liquidity!");
     });
 
+    it("CazzPay should handle purchases with crypto correctly", async () => {
+        const czpLiquidityToProvide = "1000";
+        const tstLiquidityToProvide = "100";
+        await addLiquidityToCzpAndTst(czpLiquidityToProvide, tstLiquidityToProvide);
+
+        const fiatAmtToPay = "20";
+        const sellerIdToPay = "SOME DUMMY ID";
+        const { fiatAmountPaid, fiatAmountToPayToSeller, recipientAccountId, payerWalletAddr } = await buyWithCrypto(fiatAmtToPay, sellerIdToPay);
+
+        assert.isTrue(fiatAmountPaid.eq(ethers.utils.parseEther(fiatAmtToPay)), "Correct fiat amount was not paid!");
+        assert.isTrue(isValueInPercRange(fiatAmountToPayToSeller, ethers.utils.parseEther(fiatAmtToPay), 2), "Correct fiat amount (with fees deducted) was not transferred to seller!");
+        assert.equal(recipientAccountId, sellerIdToPay, "Fiat transferred to incorrect seller!");
+        assert.equal(payerWalletAddr, (await signers[0].getAddress()), "Buyer's wallet address is not correct!");
+    });
+
+    it("CazzPay should handle purchases with ETH correctly", async () => {
+        const czpLiquidityToProvide = "20000";
+        const ethLiquidityToProvide = "10";
+        await addLiquidityToCzpAndEth(czpLiquidityToProvide, ethLiquidityToProvide);
+
+        const fiatAmtToPay = "20";
+        const sellerIdToPay = "SOME DUMMY ID";
+        const { fiatAmountPaid, fiatAmountToPayToSeller, recipientAccountId, payerWalletAddr } = await buyWithEth(fiatAmtToPay, sellerIdToPay);
+
+        assert.isTrue(fiatAmountPaid.eq(ethers.utils.parseEther(fiatAmtToPay)), "Correct fiat amount was not paid!");
+        assert.isTrue(isValueInPercRange(fiatAmountToPayToSeller, ethers.utils.parseEther(fiatAmtToPay), 2), "Correct fiat amount (with fees deducted) was not transferred to seller!");
+        assert.equal(recipientAccountId, sellerIdToPay, "Fiat transferred to incorrect seller!");
+        assert.equal(payerWalletAddr, (await signers[0].getAddress()), "Buyer's wallet address is not correct!");
+    });
+
     //////////////////////////
     // HELPERS
     //////////////////////////
@@ -186,8 +218,8 @@ describe("CazzPay should function correctly", async () => {
         );
     }
 
-    const getValIncreased = (val: BigNumber, reductionPerc: number) => {
-        return val.add(BigNumber.from(val).mul(reductionPerc).div(100));
+    const getValIncreased = (val: BigNumber, increasePerc: number) => {
+        return val.add(BigNumber.from(val).mul(increasePerc).div(100));
     }
 
     const getValReduced = (val: BigNumber, reductionPerc: number) => {
@@ -268,6 +300,54 @@ describe("CazzPay should function correctly", async () => {
             czpAmtWithdrawn,
             ethTokenAmtWithdrawn,
             liquidityTokensSubmitted
+        }
+    }
+
+    const buyWithCrypto = async (amtToPayInFiat: string, recipientAccountIdToPay: string) => {
+        const amtToPayInFiatParsed = ethers.utils.parseEther(amtToPayInFiat);
+        const testCoinPrice = await cazzPayContractRedstoneWrapped.getPriceOfTokenInCzpWithTokenAddress(testCoinContract.address);
+
+        const testCoinAmtToUse = ethers.utils.parseEther((new BN(amtToPayInFiatParsed.toString())).div(testCoinPrice.toString()).toString());
+        const testCoinMaxAmtToUse = getValIncreased(testCoinAmtToUse, 10);
+
+        await testCoinContract.connect(signers[0]).approve(cazzPayContract.address, testCoinMaxAmtToUse);
+
+        const txn = await cazzPayContract.connect(signers[0]).buyWithCryptoToken(recipientAccountIdToPay, testCoinContract.address, testCoinMaxAmtToUse, amtToPayInFiatParsed, getDeadline());
+        const { events } = await txn.wait();
+        const buyEvent = events?.find(({ event }) => (event === "BoughtWithCrypto")) as BoughtWithCryptoEvent;
+        const { payerWalletAddr, recipientAccountId, cazzPayTransactionId, tokenAmtUsedForPurchased, tokenUsedForPurchaseContractAddr, fiatAmountPaid, fiatAmountToPayToSeller } = buyEvent?.args;
+
+        return {
+            payerWalletAddr,
+            recipientAccountId,
+            cazzPayTransactionId,
+            tokenAmtUsedForPurchased,
+            tokenUsedForPurchaseContractAddr,
+            fiatAmountPaid,
+            fiatAmountToPayToSeller
+        }
+    }
+
+    const buyWithEth = async (amtToPayInFiat: string, recipientAccountIdToPay: string) => {
+        const amtToPayInFiatParsed = ethers.utils.parseEther(amtToPayInFiat);
+        const ethPrice = await cazzPayContractRedstoneWrapped.getPriceOfTokenInCzpWithTokenAddress(wethContract.address);
+
+        const ethAmtToUse = ethers.utils.parseEther((new BN(amtToPayInFiatParsed.toString())).div(ethPrice.toString()).toString());
+        const ethMaxAmtToUse = getValIncreased(ethAmtToUse, 10);
+
+        const txn = await cazzPayContract.connect(signers[0]).buyWithEth(recipientAccountIdToPay, amtToPayInFiatParsed, getDeadline(), { value: ethMaxAmtToUse });
+        const { events } = await txn.wait();
+        const buyEvent = events?.find(({ event }) => (event === "BoughtWithCrypto")) as BoughtWithCryptoEvent;
+        const { payerWalletAddr, recipientAccountId, cazzPayTransactionId, tokenAmtUsedForPurchased, tokenUsedForPurchaseContractAddr, fiatAmountPaid, fiatAmountToPayToSeller } = buyEvent?.args;
+
+        return {
+            payerWalletAddr,
+            recipientAccountId,
+            cazzPayTransactionId,
+            tokenAmtUsedForPurchased,
+            tokenUsedForPurchaseContractAddr,
+            fiatAmountPaid,
+            fiatAmountToPayToSeller
         }
     }
 });

@@ -2,6 +2,7 @@
 
 pragma solidity ^0.6.6;
 
+import "@openzeppelin/contracts/utils/Counters.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
@@ -12,6 +13,11 @@ import "./CazzPayOracle/CazzPayOracle.sol";
 
 contract CazzPay is MultiOwnable, CazzPayOracle {
     ////////////////////////
+    // LIBRARY AUGS
+    ////////////////////////
+    using Counters for Counters.Counter;
+
+    ////////////////////////
     // STORAGE
     ////////////////////////
     IUniswapV2Factory public immutable factoryContract;
@@ -19,6 +25,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     ICazzPayToken public immutable czpContract;
     IERC20 public immutable wethContract;
     uint16 public paymentTransferFeesPerc; // This would be charged from seller when receiving payments; this number would be divided by 10000 before usage; e.g, for 0.01%, this value should be 1.
+    Counters.Counter internal _cazzPayTransactionId;
 
     ////////////////////////
     // MODIFIERS
@@ -54,11 +61,12 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
 
     event BoughtWithCrypto(
         address indexed payerWalletAddr,
-        string indexed recipientAccountId,
-        string indexed randomNonce,
+        string recipientAccountId,
+        uint256 indexed cazzPayTransactionId,
         address tokenUsedForPurchaseContractAddr,
         uint256 tokenAmtUsedForPurchased,
-        uint256 fiatAmountPaid /* Atomic */
+        uint256 fiatAmountPaid, /* Atomic */
+        uint256 fiatAmountToPayToSeller /* Atomic */
     );
 
     event TokensSwapped(
@@ -111,7 +119,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @return pairAddr Address of the pair created
     */
     function createPairWithCzpAndOtherToken(address _otherTokenContractAddr)
-        public
+        external
         returns (address pairAddr)
     {
         pairAddr = factoryContract.createPair(
@@ -127,7 +135,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @return pairAddr Address of the pair created
     */
     function createPairWithCzpAndEth()
-        public
+        external
         payable
         returns (address pairAddr)
     {
@@ -210,7 +218,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         uint256 _otherTokenMinAmtToDeposit,
         uint256 _deadline
     )
-        public
+        external
         returns (
             uint256 czpAmtAdded,
             uint256 otherTokenAmtAdded,
@@ -292,7 +300,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         uint256 _ethMinAmtToDeposit,
         uint256 _deadline
     )
-        public
+        external
         payable
         returns (
             uint256 czpAmtAdded,
@@ -349,7 +357,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         uint256 _minCzpToReceive,
         uint256 _minOtherTokenToReceive,
         uint256 _deadline
-    ) public returns (uint256 czpReceived, uint256 otherTokenReceived) {
+    ) external returns (uint256 czpReceived, uint256 otherTokenReceived) {
         // Check if pair exists
         address pairAddr = factoryContract.getPair(
             address(czpContract),
@@ -405,7 +413,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         uint256 _minCzpToReceive,
         uint256 _minEthToReceive,
         uint256 _deadline
-    ) public returns (uint256 czpReceived, uint256 ethReceived) {
+    ) external returns (uint256 czpReceived, uint256 ethReceived) {
         // Check if pair exists
         address pairAddr = factoryContract.getPair(
             address(czpContract),
@@ -450,23 +458,21 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @notice Called by buyer to pay to seller. Any extra tokens are refunded. Since this is a purchase, a payment transfer fee is charged IN ADDITION to the swapping fees
     @notice Caller must approve this contract to spend the input tokens BEFORE calling this
     @param _recipientAccountId The account id of recipient (for indexing)
-    @param _randomNonce A random nonce; would be used for payment verification later; buyer must submit this to verify and complete the transaction
     @param _otherTokenContractAddr Address of the token to use for purchase
     @param _otherTokenMaxAmtToPayWith Max amount of the 'other token' to use for purchase
     @param _fiatAmtToPay Fiat to transfer to seller; MUST BE ATOMIC WITH 18 decimals
     @param _deadline Deadline (unix secs) to execute this transaction
     @return otherTokenAmtUsed Amount of 'other token' used
     @return fiatAmountPaid Amount of FIAT paid to seller (with fees deducted); Atomic
-    @dev Fires event BoughtWithCrypto(address payerWalletAddr, string recipientAccountId, string randomNonce, address tokenUsedForPurchaseContractAddr, uint256 tokenAmtUsedForPurchased, uint256 fiatAmountPaid);
+    @dev Fires event BoughtWithCrypto(address payerWalletAddr, string recipientAccountId, uint256 cazzPayTransactionId, address tokenUsedForPurchaseContractAddr, uint256 tokenAmtUsedForPurchased, uint256 fiatAmountPaid);
      */
     function buyWithCryptoToken(
-        string memory _recipientAccountId,
-        string memory _randomNonce,
+        string calldata _recipientAccountId,
         address _otherTokenContractAddr,
         uint256 _otherTokenMaxAmtToPayWith,
         uint256 _fiatAmtToPay,
         uint256 _deadline
-    ) public returns (uint256 otherTokenAmtUsed, uint256 fiatAmountPaid) {
+    ) external returns (uint256 otherTokenAmtUsed, uint256 fiatAmountPaid) {
         // If 'other token' is czp, no swap is needed, else swap needed
         if (_otherTokenContractAddr == address(czpContract)) {
             // Check if tokens are enough
@@ -486,12 +492,16 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             // Burn CZP to simulate FIAT
             czpContract.burn(fiatAmtToPayWithFeesDeducted);
 
+            // Increment transaction ID count
+            _cazzPayTransactionId.increment();
+
             // Emit event
             emit BoughtWithCrypto(
                 msg.sender,
                 _recipientAccountId,
-                _randomNonce,
+                _cazzPayTransactionId.current(),
                 _otherTokenContractAddr,
+                _fiatAmtToPay,
                 _fiatAmtToPay,
                 fiatAmtToPayWithFeesDeducted
             );
@@ -508,16 +518,6 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
                     _otherTokenContractAddr
                 ) != address(0),
                 "PAIR DOES NOT EXIST"
-            );
-
-            // Check to see if enough tokens are available
-            uint256 otherTokenPriceInCzp = getPriceOfTokenInCzpWithTokenAddress(
-                _otherTokenContractAddr
-            );
-            require(
-                otherTokenPriceInCzp * _otherTokenMaxAmtToPayWith >=
-                    _fiatAmtToPay,
-                "INSUFFICIENT MAX AMOUNT"
             );
 
             // Transfer tokens to this contract
@@ -566,13 +566,17 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
                 );
             }
 
+            // Increment transaction ID count
+            _cazzPayTransactionId.increment();
+
             // Emit event
             emit BoughtWithCrypto(
                 msg.sender,
                 _recipientAccountId,
-                _randomNonce,
+                _cazzPayTransactionId.current(),
                 _otherTokenContractAddr,
                 otherTokenAmtUsed,
+                _fiatAmtToPay,
                 fiatAmtToPayWithFeesDeducted
             );
 
@@ -582,23 +586,20 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     }
 
     /**
-    @notice Called by buyer to pay to seller. Any extra tokens are refunded. Since this is a purchase, a payment transfer fee is charged IN ADDITION to the swapping fees
+    @notice Called by buyer to pay to seller. Any extra eth is refunded. Since this is a purchase, a payment transfer fee is charged IN ADDITION to the swapping fees
+    @dev msg.value is treated as ethMaxAmtToPayWith
     @param _recipientAccountId The account id of recipient (for indexing)
-    @param _randomNonce A random nonce; would be used for payment verification later; buyer must submit this to verify and complete the transaction
-    @param _ethMaxAmtToPayWith Max amount of ETH to use for purchase
     @param _fiatAmtToPay Fiat to transfer to seller; MUST BE ATOMIC WITH 18 decimals
     @param _deadline Deadline (unix secs) to execute this transaction
     @return ethAmtUsed Amount of ETH used
     @return fiatAmountPaid Amount of FIAT paid to seller (with fees deducted); Atomic
-    @dev Fires event BoughtWithCrypto(address payerWalletAddr, string recipientAccountId, string randomNonce, address tokenUsedForPurchaseContractAddr, uint256 tokenAmtUsedForPurchased, uint256 fiatAmountPaid);
+    @dev Fires event BoughtWithCrypto(address payerWalletAddr, string recipientAccountId, uint256 cazzPayTransactionId, address tokenUsedForPurchaseContractAddr, uint256 tokenAmtUsedForPurchased, uint256 fiatAmountPaid);
      */
     function buyWithEth(
-        string memory _recipientAccountId,
-        string memory _randomNonce,
-        uint256 _ethMaxAmtToPayWith,
+        string calldata _recipientAccountId,
         uint256 _fiatAmtToPay,
         uint256 _deadline
-    ) public payable returns (uint256 ethAmtUsed, uint256 fiatAmountPaid) {
+    ) external payable returns (uint256 ethAmtUsed, uint256 fiatAmountPaid) {
         // Check to see if Pair exists
         require(
             factoryContract.getPair(
@@ -608,33 +609,13 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             "PAIR DOES NOT EXIST"
         );
 
-        // Check to see if enough tokens are available
-        uint256 ethPriceInCzp = getPriceOfTokenInCzpWithTokenSymbol("ETH");
-        require(
-            ethPriceInCzp * _ethMaxAmtToPayWith >= _fiatAmtToPay,
-            "INSUFFICIENT MAX AMOUNT"
-        );
-
-        // Transfer tokens to this contract
-        wethContract.transferFrom(
-            msg.sender,
-            address(this),
-            _ethMaxAmtToPayWith
-        );
-
-        // Approve router to spend tokens
-        wethContract.approve(address(routerContract), _ethMaxAmtToPayWith);
-
         // Swap tokens
         address[] memory swapPath = new address[](2);
         swapPath[0] = address(wethContract);
         swapPath[1] = address(czpContract);
-        uint256[] memory amounts = routerContract.swapETHForExactTokens(
-            _fiatAmtToPay,
-            swapPath,
-            address(this),
-            _deadline
-        );
+        uint256[] memory amounts = routerContract.swapETHForExactTokens{
+            value: msg.value
+        }(_fiatAmtToPay, swapPath, address(this), _deadline);
         ethAmtUsed = amounts[0];
 
         // Calculate fee deducted amount
@@ -645,13 +626,25 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         // Burn CZP to simulate FIAT
         czpContract.burn(fiatAmtToPayWithFeesDeducted);
 
+        // Increment transaction ID count
+        _cazzPayTransactionId.increment();
+
+        // Refund unused ETH
+        if (ethAmtUsed < msg.value) {
+            (bool success, ) = payable(msg.sender).call{
+                value: msg.value - ethAmtUsed
+            }("");
+            require(success, "CALLER NOT REFUNDED");
+        }
+
         // Emit event
         emit BoughtWithCrypto(
             msg.sender,
             _recipientAccountId,
-            _randomNonce,
+            _cazzPayTransactionId.current(),
             address(wethContract),
             ethAmtUsed,
+            _fiatAmtToPay,
             fiatAmtToPayWithFeesDeducted
         );
 
@@ -675,7 +668,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         uint256 _otherTokenAmt,
         uint256 _czpMinAmt,
         uint256 _deadline
-    ) public returns (uint256 otherTokenAmtUsed, uint256 czpAmtReceived) {
+    ) external returns (uint256 otherTokenAmtUsed, uint256 czpAmtReceived) {
         return
             _swapTokens(
                 _otherTokenContractAddr,
@@ -702,7 +695,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         uint256 _czpAmt,
         uint256 _otherTokenMinAmt,
         uint256 _deadline
-    ) public returns (uint256 czpAmtUsed, uint256 otherTokenAmtReceived) {
+    ) external returns (uint256 czpAmtUsed, uint256 otherTokenAmtReceived) {
         return
             _swapTokens(
                 address(czpContract),
@@ -789,4 +782,9 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             outputTokenAmtReceived
         );
     }
+
+    /**
+    @notice Receive method, to allow other contracts to safely send ETH to this contract
+     */
+    receive() external payable {}
 }
