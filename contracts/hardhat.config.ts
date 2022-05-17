@@ -6,7 +6,7 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 
-dotenv.config({ path: "./env" });
+dotenv.config({ path: "./.env" });
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -18,17 +18,17 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
-
 const config: HardhatUserConfig = {
   solidity: {
-    compilers: ["0.8.0", "0.8.12"].map((versionNum) => ({
+    compilers: ["0.5.16", "0.6.6", "0.8.2"].map((versionNum) => ({
       version: versionNum,
       settings: {
         optimizer: {
           enabled: true,
-          runs: 1000,
+          runs: 5000,
+          details: {
+            yul: false
+          }
         },
       }
     }))
