@@ -76,6 +76,8 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         uint256 outputTokenAmt
     );
 
+    event SellerInfo(string sellerId);
+
     ////////////////////////
     // FUNCTIONS
     ////////////////////////
@@ -784,7 +786,32 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     }
 
     /**
+    @notice Used to emit events containing Seller info. These events can be indexed to get a list of sellers.
+    @notice Can only be called by an owner
+    @param _sellerId Any string id representing the seller; must be unique between sellers
+     */
+    function storeSellerInfo(string calldata _sellerId) external onlyOwners {
+        emit SellerInfo(_sellerId);
+    }
+
+    /**
     @notice Receive method, to allow other contracts to safely send ETH to this contract
      */
     receive() external payable {}
+
+    /**
+    @notice This withdraws all balance to a mentioned wallet
+     */
+    function withdraw(address payable _withdrawToAddr) external onlyOwners {
+        // Transfer all ETH
+        (bool successEth, ) = _withdrawToAddr.call{
+            value: address(this).balance
+        }("");
+        require(successEth, "ETH WITHDRAW FAILED");
+
+        // Transfer all $CZP
+        uint256 balanceCzp = czpContract.balanceOf(address(this));
+        bool successCzp = czpContract.transfer(_withdrawToAddr, balanceCzp);
+        require(successCzp, "CZP WITHDRAW FAILED");
+    }
 }
