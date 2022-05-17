@@ -70,6 +70,7 @@ export async function capturePayment(orderId: string) {
 
 //incase of any error happens while minting the token or the token could not generated
 //we have to refund the payment
+// Takes the captureId which will be termed as a paymentId as a parameter
 export async function refundPayment(paymentId: string) {
   try {
     const access_token: string = await generateAccessToken();
@@ -88,6 +89,7 @@ export async function refundPayment(paymentId: string) {
 }
 
 //helper function for generating access token via paypal client id and secret
+//returns the access_token via paypal merchant client id and client secret
 export async function generateAccessToken(): Promise<string> {
   try {
     const auth: string = Buffer.from(CLIENT_ID + ":" + CLIENT_SECRET).toString(
@@ -111,6 +113,9 @@ export async function generateAccessToken(): Promise<string> {
 /** Here are the login utilites */
 
 //generating access token for customer via authorization code
+//takes the authorization code which we will get from the redirect url(callback url)
+//as parameter
+//returns the accessToken for the customer after login
 export async function generateAccessTokenForCustomer(
   authorization: string
 ): Promise<PayPalToken> {
@@ -138,6 +143,9 @@ export async function generateAccessTokenForCustomer(
 }
 
 //fetching the customer data via access_token
+/** takes customer access_token as a parameter
+ * and generate PaypalProfile object
+ */
 export async function getCustomerData(accessToken: string) {
   try {
     const url = `${base}/v1/identity/oauth2/userinfo?schema=paypalv1.1`;
@@ -161,6 +169,7 @@ export async function getCustomerData(accessToken: string) {
 }
 
 //api function for getting access_token via refresh_token if access_token is expired
+//helper function to refresh the customer access_token which takes refreshToken as a parameter
 export async function refreshAccessToken(
   refreshToken: string
 ): Promise<string> {
@@ -186,7 +195,9 @@ export async function refreshAccessToken(
 
 /** Sending money from the merchant account is complex we need to use payout rest api here
  *  we need to create payout batch
- *
+ * two parameters needed -
+ * 1. how much amount to be paid
+ * 2. Seller paypal id
  */
 
 export async function payoutSeller(
