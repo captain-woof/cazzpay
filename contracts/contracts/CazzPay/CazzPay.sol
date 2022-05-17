@@ -763,7 +763,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         // Perform token swap
         address[] memory swapPath = new address[](2);
         swapPath[0] = _inputTokenContractAddr;
-        swapPath[0] = _outputTokenContractAddr;
+        swapPath[1] = _outputTokenContractAddr;
         uint256[] memory amounts = routerContract.swapExactTokensForTokens(
             _inputTokenAmt,
             _outputTokenMinAmt,

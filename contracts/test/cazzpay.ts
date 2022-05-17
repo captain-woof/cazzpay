@@ -11,7 +11,7 @@ import BN from "bignumber.js";
 // For Chai
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { AddedLiquidityToCzpAndOtherTokenPairEvent, BoughtWithCryptoEvent, CreatedPairWithCzpAndOtherTokenEvent, WithdrawnLiquidityFromCzpAndOtherTokenPairEvent } from "../typechain/CazzPay";
+import { AddedLiquidityToCzpAndOtherTokenPairEvent, BoughtWithCryptoEvent, CreatedPairWithCzpAndOtherTokenEvent, TokensSwappedEvent, WithdrawnLiquidityFromCzpAndOtherTokenPairEvent } from "../typechain/CazzPay";
 const { assert, expect } = chai.use(chaiAsPromised);
 
 describe("CazzPay should function correctly", async () => {
@@ -199,6 +199,32 @@ describe("CazzPay should function correctly", async () => {
         assert.equal(payerWalletAddr, (await signers[0].getAddress()), "Buyer's wallet address is not correct!");
     });
 
+    it("Swapping between CZP->OtherToken should work correctly", async () => {
+        const czpLiquidityToProvide = "1000";
+        const tstLiquidityToProvide = "100";
+        await addLiquidityToCzpAndTst(czpLiquidityToProvide, tstLiquidityToProvide);
+
+        const czpAmtToSwap = "10";
+        const tstAmtExpected = "1";
+        const { inputTokenAmt, outputTokenAmt } = await swapCzpForOtherTokens(czpAmtToSwap, "0");
+
+        assert.isTrue(isValueInPercRange(inputTokenAmt, ethers.utils.parseEther(czpAmtToSwap), 2), "Incorrect CZP amount got swapped!");
+        assert.isTrue(isValueInPercRange(outputTokenAmt, ethers.utils.parseEther(tstAmtExpected), 2), "Incorrect other token amount was received!");
+    });
+
+    it("Swapping between OtherToken->CZP should work correctly", async () => {
+        const czpLiquidityToProvide = "1000";
+        const tstLiquidityToProvide = "100";
+        await addLiquidityToCzpAndTst(czpLiquidityToProvide, tstLiquidityToProvide);
+
+        const tstAmtToSwap = "1";
+        const czpAmtExpected = "10";
+        const { inputTokenAmt, outputTokenAmt } = await swapOtherTokensForCzp(tstAmtToSwap, "0");
+
+        assert.isTrue(isValueInPercRange(inputTokenAmt, ethers.utils.parseEther(tstAmtToSwap), 2), "Incorrect other token amount got swapped!");
+        assert.isTrue(isValueInPercRange(outputTokenAmt, ethers.utils.parseEther(czpAmtExpected), 2), "Incorrect CZP amount was received!");
+    });
+
     //////////////////////////
     // HELPERS
     //////////////////////////
@@ -348,6 +374,42 @@ describe("CazzPay should function correctly", async () => {
             tokenUsedForPurchaseContractAddr,
             fiatAmountPaid,
             fiatAmountToPayToSeller
+        }
+    }
+
+    const swapOtherTokensForCzp = async (otherTokenAmtToSwap: string, czmAmtMinToGet: string) => {
+        const otherTokenAmtToSwapParsed = ethers.utils.parseEther(otherTokenAmtToSwap);
+        const minCzpToGetParsed = ethers.utils.parseEther(czmAmtMinToGet);
+
+        await testCoinContract.connect(signers[0]).approve(cazzPayContract.address, otherTokenAmtToSwapParsed);
+
+        const txn = await cazzPayContract.swapOtherTokensForCzp(testCoinContract.address, otherTokenAmtToSwapParsed, minCzpToGetParsed, getDeadline());
+        const { events } = await txn.wait();
+        const { inputTokenAmt, inputTokenContractAddr, outputTokenAmt, outputTokenContractAddr } = (events?.find(({ event }) => (event === "TokensSwapped")) as TokensSwappedEvent)?.args;
+
+        return {
+            inputTokenAmt,
+            inputTokenContractAddr,
+            outputTokenAmt,
+            outputTokenContractAddr
+        }
+    }
+
+    const swapCzpForOtherTokens = async (czpAmtToSwap: string, otherTokenMinAmtToGet: string) => {
+        const czpAmtToSwapParsed = ethers.utils.parseEther(czpAmtToSwap);
+        const otherTokenMinAmtToGetParsed = ethers.utils.parseEther(otherTokenMinAmtToGet);
+
+        await czpTokenContract.connect(signers[0]).approve(cazzPayContract.address, czpAmtToSwapParsed);
+
+        const txn = await cazzPayContract.swapCzpForOtherTokens(testCoinContract.address, czpAmtToSwapParsed, otherTokenMinAmtToGetParsed, getDeadline());
+        const { events } = await txn.wait();
+        const { inputTokenAmt, inputTokenContractAddr, outputTokenAmt, outputTokenContractAddr } = (events?.find(({ event }) => (event === "TokensSwapped")) as TokensSwappedEvent)?.args;
+
+        return {
+            inputTokenAmt,
+            inputTokenContractAddr,
+            outputTokenAmt,
+            outputTokenContractAddr
         }
     }
 });
