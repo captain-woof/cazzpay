@@ -199,7 +199,6 @@ export async function refreshAccessToken(
  * 1. how much amount to be paid
  * 2. Seller paypal id
  */
-
 export async function payoutSeller(
   amountToPay: string | number,
   sellerId: string
