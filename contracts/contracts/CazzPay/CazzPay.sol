@@ -76,7 +76,9 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         uint256 outputTokenAmt
     );
 
-    event SellerInfo(string sellerId);
+    event SellerInfo(string sellerId, string email, string name);
+
+    event PurchaseConfirmed(uint256 indexed cazzPayTransactionId);
 
     ////////////////////////
     // FUNCTIONS
@@ -789,9 +791,15 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     @notice Used to emit events containing Seller info. These events can be indexed to get a list of sellers.
     @notice Can only be called by an owner
     @param _sellerId Any string id representing the seller; must be unique between sellers
+    @param _email Email of the seller
+    @param _name Name of the seller
      */
-    function storeSellerInfo(string calldata _sellerId) external onlyOwners {
-        emit SellerInfo(_sellerId);
+    function storeSellerInfo(
+        string calldata _sellerId,
+        string calldata _email,
+        string calldata _name
+    ) external onlyOwners {
+        emit SellerInfo(_sellerId, _email, _name);
     }
 
     /**
