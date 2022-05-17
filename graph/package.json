@@ -1,0 +1,21 @@
+{
+  "name": "cazzpay-graph",
+  "license": "MIT",
+  "author": {
+    "name": "Sohail Saha",
+    "email": "captainwoof.official@gmail.com",
+    "url": "https://sohail-saha.in"
+  },
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ cazzpay",
+    "create-local": "graph create --node http://localhost:8020/ cazzpay",
+    "remove-local": "graph remove --node http://localhost:8020/ cazzpay",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 cazzpay"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.29.2",
+    "@graphprotocol/graph-ts": "0.26.0"
+  }
+}

@@ -1,0 +1,29 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: CazzPay
+    network: rinkeby
+    source:
+      address: "0xd057D5A7Bc5403436AAB3CeEBfE72E5d781577Dc"
+      abi: CazzPay
+      startBlock: 10691660
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - PurchaseTransaction
+        - Seller
+      abis:
+        - name: CazzPay
+          file: ./abis/CazzPay.json
+      eventHandlers:
+        - event: BoughtWithCrypto(indexed address,string,indexed uint256,address,uint256,uint256,uint256)
+          handler: handleBoughtWithCrypto
+        - event: PurchaseConfirmed(indexed uint256)
+          handler: handlePurchaseConfirmed
+        - event: SellerInfo(string,string,string)
+          handler: handleSellerInfo
+      file: ./src/mapping.ts

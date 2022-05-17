@@ -1,0 +1,761 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "contract IUniswapV2Factory",
+        "name": "_factoryContractAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IUniswapV2Router02",
+        "name": "_routerContractAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "contract ICazzPayToken",
+        "name": "_czpContractAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_wethContractAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_paymentTransferFeesPerc",
+        "type": "uint16"
+      },
+      {
+        "internalType": "address",
+        "name": "_approvedPriceFeedSigner",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "otherTokenContractAddr",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "liquidityProviderAddr",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "czpAmtAdded",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "otherTokenAmtAdded",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "liquidityTokensMinted",
+        "type": "uint256"
+      }
+    ],
+    "name": "AddedLiquidityToCzpAndOtherTokenPair",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "payerWalletAddr",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "recipientAccountId",
+        "type": "string"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "cazzPayTransactionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "tokenUsedForPurchaseContractAddr",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenAmtUsedForPurchased",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "fiatAmountPaid",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "fiatAmountToPayToSeller",
+        "type": "uint256"
+      }
+    ],
+    "name": "BoughtWithCrypto",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "pairAddr",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "otherTokenContractAddr",
+        "type": "address"
+      }
+    ],
+    "name": "CreatedPairWithCzpAndOtherToken",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "cazzPayTransactionId",
+        "type": "uint256"
+      }
+    ],
+    "name": "PurchaseConfirmed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "sellerId",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "email",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "SellerInfo",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "inputTokenContractAddr",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "outputTokenContractAddr",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "inputTokenAmt",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "outputTokenAmt",
+        "type": "uint256"
+      }
+    ],
+    "name": "TokensSwapped",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "otherTokenContractAddr",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "liquidityProviderAddr",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "czpAmtWithdrawn",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "otherTokenAmtWithdrawn",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "liquidityTokensSubmitted",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawnLiquidityFromCzpAndOtherTokenPair",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_czpAmtToDeposit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_czpMinAmtToDeposit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_ethMinAmtToDeposit",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_deadline", "type": "uint256" }
+    ],
+    "name": "addLiquidityToCzpAndEthPair",
+    "outputs": [
+      { "internalType": "uint256", "name": "czpAmtAdded", "type": "uint256" },
+      { "internalType": "uint256", "name": "ethAmtAdded", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "liquidityTokensMinted",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_otherTokenContractAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_czpAmtToDeposit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_otherTokenAmtToDeposit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_czpMinAmtToDeposit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_otherTokenMinAmtToDeposit",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_deadline", "type": "uint256" }
+    ],
+    "name": "addLiquidityToCzpAndOtherTokenPair",
+    "outputs": [
+      { "internalType": "uint256", "name": "czpAmtAdded", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "otherTokenAmtAdded",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "liquidityTokensMinted",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_newOwner", "type": "address" }
+    ],
+    "name": "addOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "approvedPriceFeedSigner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_recipientAccountId",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_otherTokenContractAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_otherTokenMaxAmtToPayWith",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_fiatAmtToPay", "type": "uint256" },
+      { "internalType": "uint256", "name": "_deadline", "type": "uint256" }
+    ],
+    "name": "buyWithCryptoToken",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "otherTokenAmtUsed",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "fiatAmountPaid", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_recipientAccountId",
+        "type": "string"
+      },
+      { "internalType": "uint256", "name": "_fiatAmtToPay", "type": "uint256" },
+      { "internalType": "uint256", "name": "_deadline", "type": "uint256" }
+    ],
+    "name": "buyWithEth",
+    "outputs": [
+      { "internalType": "uint256", "name": "ethAmtUsed", "type": "uint256" },
+      { "internalType": "uint256", "name": "fiatAmountPaid", "type": "uint256" }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "createPairWithCzpAndEth",
+    "outputs": [
+      { "internalType": "address", "name": "pairAddr", "type": "address" }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_otherTokenContractAddr",
+        "type": "address"
+      }
+    ],
+    "name": "createPairWithCzpAndOtherToken",
+    "outputs": [
+      { "internalType": "address", "name": "pairAddr", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "czpContract",
+    "outputs": [
+      {
+        "internalType": "contract ICazzPayToken",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "factoryContract",
+    "outputs": [
+      {
+        "internalType": "contract IUniswapV2Factory",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllPairsWithCzpAndOtherToken",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "pairAddrsWithCzpAndOtherToken",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_otherTokenContractAddr",
+        "type": "address"
+      }
+    ],
+    "name": "getCzpAndOtherTokenPairAddr",
+    "outputs": [
+      { "internalType": "address", "name": "poolAddr", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMaxBlockTimestampDelay",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMaxDataTimestampDelay",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_tokenContractAddr",
+        "type": "address"
+      }
+    ],
+    "name": "getPriceOfTokenInCzpWithTokenAddress",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_tokenSymbol", "type": "string" }
+    ],
+    "name": "getPriceOfTokenInCzpWithTokenSymbol",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_ownerToVerify", "type": "address" }
+    ],
+    "name": "isOwner",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_receivedSigner",
+        "type": "address"
+      }
+    ],
+    "name": "isSignerAuthorized",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_receivedTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "isTimestampValid",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paymentTransferFeesPerc",
+    "outputs": [{ "internalType": "uint16", "name": "", "type": "uint16" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_ownerToRemove", "type": "address" }
+    ],
+    "name": "removeOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "routerContract",
+    "outputs": [
+      {
+        "internalType": "contract IUniswapV2Router02",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_newApprovedPriceFeedSigner",
+        "type": "address"
+      }
+    ],
+    "name": "setApprovedPriceFeedSigner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "_newPaymentTransferFeesPerc",
+        "type": "uint16"
+      }
+    ],
+    "name": "setPaymentTransferFeesPerc",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_cazzPayTransactionIdToConfirm",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPurchaseConfirmation",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_sellerId", "type": "string" },
+      { "internalType": "string", "name": "_email", "type": "string" },
+      { "internalType": "string", "name": "_name", "type": "string" }
+    ],
+    "name": "storeSellerInfo",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_otherTokenContractAddr",
+        "type": "address"
+      },
+      { "internalType": "uint256", "name": "_czpAmt", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "_otherTokenMinAmt",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_deadline", "type": "uint256" }
+    ],
+    "name": "swapCzpForOtherTokens",
+    "outputs": [
+      { "internalType": "uint256", "name": "czpAmtUsed", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "otherTokenAmtReceived",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_otherTokenContractAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_otherTokenAmt",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_czpMinAmt", "type": "uint256" },
+      { "internalType": "uint256", "name": "_deadline", "type": "uint256" }
+    ],
+    "name": "swapOtherTokensForCzp",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "otherTokenAmtUsed",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "czpAmtReceived", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wethContract",
+    "outputs": [
+      { "internalType": "contract IERC20", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "_withdrawToAddr",
+        "type": "address"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_liquidityToWithdraw",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minCzpToReceive",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minEthToReceive",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_deadline", "type": "uint256" }
+    ],
+    "name": "withdrawLiquidityForCzpAndEth",
+    "outputs": [
+      { "internalType": "uint256", "name": "czpReceived", "type": "uint256" },
+      { "internalType": "uint256", "name": "ethReceived", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_otherTokenContractAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_liquidityToWithdraw",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minCzpToReceive",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minOtherTokenToReceive",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_deadline", "type": "uint256" }
+    ],
+    "name": "withdrawLiquidityForCzpAndOtherToken",
+    "outputs": [
+      { "internalType": "uint256", "name": "czpReceived", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "otherTokenReceived",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  { "stateMutability": "payable", "type": "receive" }
+]

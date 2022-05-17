@@ -1,0 +1,17 @@
+type Seller @entity {
+  id: String! # sellerId - Any identifiable, unique string
+  email: String!
+  name: String!
+  transactionsReceived: [PurchaseTransaction!]! @derivedFrom(field: "recipientSeller")
+}
+
+type PurchaseTransaction @entity {
+  id: ID! # CazzPay Transaction Id
+  payerWalletAddr: Bytes! # address
+  recipientSeller: Seller!
+  tokenUsedForPurchaseContractAddr: Bytes! #address
+  tokenAmtUsedForPurchased: BigInt!
+  fiatAmountPaid: BigInt!
+  fiatAmountToPayToSeller: BigInt!
+  confirmed: Boolean!
+}
