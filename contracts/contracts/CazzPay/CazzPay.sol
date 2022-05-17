@@ -803,6 +803,23 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     }
 
     /**
+    @notice Call this (via an owner) to confirm a purchase
+    @notice This confirmation is to prevent double-spending, because the event emitted in this function gives the client a way to index events and find out if this transaction id is already verified, thus recognising double-spending attempts.
+    @notice Can only be called by owners
+    @param _cazzPayTransactionIdToConfirm CazzPayTransactionId to set as confirmed
+     */
+    function setPurchaseConfirmation(uint256 _cazzPayTransactionIdToConfirm)
+        external
+        onlyOwners
+    {
+        require(
+            _cazzPayTransactionIdToConfirm <= _cazzPayTransactionId.current(),
+            "TRANSACTION NEVER HAPPENED"
+        );
+        emit PurchaseConfirmed(_cazzPayTransactionIdToConfirm);
+    }
+
+    /**
     @notice Receive method, to allow other contracts to safely send ETH to this contract
      */
     receive() external payable {}
