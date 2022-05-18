@@ -89,7 +89,7 @@ export default function AppBar() {
                                 {/* About */}
                                 <MenuGroup title='About'>
                                     <Link href="/about" passHref><a><MenuItemCustom _focus={{ background: "blue.400", color: "gray.50" }}>
-                                        How it works?
+                                        How it works
                                     </MenuItemCustom></a></Link>
                                 </MenuGroup>
                                 <MenuDivider />

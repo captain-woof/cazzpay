@@ -23,6 +23,6 @@ const theme = extendTheme({
             }
         }
     }
-}, withDefaultColorScheme({ colorScheme: "blue" })) as Theme;
+}) as Theme;
 
 export default theme;
