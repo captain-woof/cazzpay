@@ -7,12 +7,21 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typechain": "cd ../contracts && npx hardhat clean && npx hardhat compile && find ./artifacts/contracts/ -maxdepth 5 -name '*.json' | grep -v \".dbg.json\" | xargs --replace={} cp \"{}\" ../client/contracts && cd ../client && cp -r ../contracts/typechain ./"
+    "typechain": "cd ../contracts && yarn typechain && find ./artifacts/contracts/ -maxdepth 5 -name '*.json' | grep -v \".dbg.json\" | xargs --replace={} cp \"{}\" ../client/contracts && cd ../client && cp -r ../contracts/typechain ./"
   },
   "dependencies": {
+    "@chakra-ui/react": "^2.0.2",
+    "@chakra-ui/theme-tools": "^2.0.0",
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "@paypal/react-paypal-js": "^7.7.0",
+    "@reduxjs/toolkit": "^1.8.1",
+    "framer-motion": "^6",
     "next": "12.1.6",
     "react": "18.1.0",
-    "react-dom": "18.1.0"
+    "react-dom": "18.1.0",
+    "react-icons": "^4.3.1",
+    "react-redux": "^8.0.1"
   },
   "devDependencies": {
     "@types/node": "17.0.31",
