@@ -1,6 +1,8 @@
 import { Button, Flex, Heading, Hide, IconButton, Menu, MenuButton, MenuDivider, MenuGroup, MenuItem, MenuItemProps, MenuList, Show, useBreakpointValue, useColorMode, useColorModeValue } from "@chakra-ui/react";
 import { FiChevronDown as DownArrowIcon, FiSun as SunIcon, FiMoon as MoonIcon } from "react-icons/fi";
 import { HiMenuAlt4 as MenuIcon } from "react-icons/hi";
+import { BiHelpCircle as HelpIcon } from "react-icons/bi";
+import { AiOutlineLogin as LoginIcon } from "react-icons/ai";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePaypal } from "../../../hooks/usePaypal";
@@ -43,21 +45,16 @@ export default function AppBar() {
                     {/* Nav menu (widescreens) */}
                     <Show above="md">
 
-                        {/* About */}
-                        <Link href="/about" passHref><a><Button variant="unstyled">
-                            About
-                        </Button></a></Link>
-
                         {/* Seller */}
                         <Menu>
                             <MenuButton as={Button} rightIcon={<DownArrowIcon />} variant="unstyled" display="flex">
                                 Seller
                             </MenuButton>
                             <MenuList>
-                                <Link href="/seller/about" passHref><a><MenuItem>
+                                <Link href="/seller/about" passHref><a><MenuItem icon={<HelpIcon size={16} />}>
                                     About
                                 </MenuItem></a></Link>
-                                <Link href={paypalState.loggedIn ? "/seller/dashboard" : "/login"} passHref><a><MenuItem>
+                                <Link href={paypalState.loggedIn ? "/seller/dashboard" : "/login"} passHref><a><MenuItem icon={<LoginIcon size={16} />}>
                                     {paypalState.loggedIn ? "Dashboard" : "Login"}
                                 </MenuItem></a></Link>
                             </MenuList>
@@ -69,10 +66,10 @@ export default function AppBar() {
                                 Liquidity Provider
                             </MenuButton>
                             <MenuList>
-                                <Link href="/liquidity-provider/about" passHref><a><MenuItem>
+                                <Link href="/liquidity-provider/about" passHref><a><MenuItem icon={<HelpIcon size={16} />}>
                                     About
                                 </MenuItem></a></Link>
-                                <Link href={paypalState.loggedIn ? "/liquidity-provider/dashboard" : "/login"} passHref><a><MenuItem>
+                                <Link href={paypalState.loggedIn ? "/liquidity-provider/dashboard" : "/login"} passHref><a><MenuItem icon={<LoginIcon size={16} />}>
                                     {paypalState.loggedIn ? "Dashboard" : "Login"}
                                 </MenuItem></a></Link>
                             </MenuList>
@@ -86,32 +83,24 @@ export default function AppBar() {
 
                             <MenuList>
 
-                                {/* About */}
-                                <MenuGroup title='About'>
-                                    <Link href="/about" passHref><a><MenuItemCustom _focus={{ background: "blue.400", color: "gray.50" }}>
-                                        How it works
-                                    </MenuItemCustom></a></Link>
-                                </MenuGroup>
-                                <MenuDivider />
-
                                 {/* Seller */}
                                 <MenuGroup title='Seller'>
-                                    <Link href="/seller/about" passHref><a><MenuItemCustom>
-                                        About
-                                    </MenuItemCustom></a></Link>
-                                    <Link href={paypalState.loggedIn ? "/seller/dashboard" : "/login"} passHref><a><MenuItemCustom>
+                                    <Link href={paypalState.loggedIn ? "/seller/dashboard" : "/login"} passHref><a><MenuItemCustom icon={<LoginIcon size={16} />}>
                                         {paypalState.loggedIn ? "Dashboard" : "Login"}
+                                    </MenuItemCustom></a></Link>
+                                    <Link href="/seller/about" passHref><a><MenuItemCustom icon={<HelpIcon size={16} />}>
+                                        Know more
                                     </MenuItemCustom></a></Link>
                                 </MenuGroup>
                                 <MenuDivider />
 
                                 {/* Liquidity provider */}
                                 <MenuGroup title='Liquidity provider'>
-                                    <Link href="/liquidity-provider/about" passHref><a><MenuItemCustom>
-                                        About
-                                    </MenuItemCustom></a></Link>
-                                    <Link href={paypalState.loggedIn ? "/liquidity-provider/dashboard" : "/login"} passHref><a><MenuItemCustom>
+                                    <Link href={paypalState.loggedIn ? "/liquidity-provider/dashboard" : "/login"} passHref><a><MenuItemCustom icon={<LoginIcon size={16} />}>
                                         {paypalState.loggedIn ? "Dashboard" : "Login"}
+                                    </MenuItemCustom></a></Link>
+                                    <Link href="/liquidity-provider/about" passHref><a><MenuItemCustom icon={<HelpIcon size={16} />}>
+                                        Know more
                                     </MenuItemCustom></a></Link>
                                 </MenuGroup>
 
