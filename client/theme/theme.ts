@@ -15,6 +15,13 @@ const theme = extendTheme({
                 backgroundColor: mode("gray.50", "gray.700")(props)
             }
         })
+    },
+    components: {
+        Heading: {
+            baseStyle: {
+                fontWeight: 400
+            }
+        }
     }
 }, withDefaultColorScheme({ colorScheme: "blue" })) as Theme;
 
