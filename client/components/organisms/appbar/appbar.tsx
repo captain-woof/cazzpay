@@ -1,4 +1,4 @@
-import { Button, Flex, Heading, Hide, IconButton, Menu, MenuButton, MenuDivider, MenuGroup, MenuItem, MenuItemProps, MenuList, Show, useBreakpointValue, useColorMode } from "@chakra-ui/react";
+import { Button, Flex, Heading, Hide, IconButton, Menu, MenuButton, MenuDivider, MenuGroup, MenuItem, MenuItemProps, MenuList, Show, useBreakpointValue, useColorMode, useColorModeValue } from "@chakra-ui/react";
 import { FiChevronDown as DownArrowIcon, FiSun as SunIcon, FiMoon as MoonIcon } from "react-icons/fi";
 import { HiMenuAlt4 as MenuIcon } from "react-icons/hi";
 import Link from "next/link";
@@ -23,8 +23,11 @@ export default function AppBar() {
     const menuIconButtonSize = useBreakpointValue({ base: "md", md: "lg" });
     const menuIconButtonIconSize = useBreakpointValue({ base: "20", md: "22" });
 
+    // Navbar background
+    const navbarBackgroundColor = useColorModeValue("gray.50", "gray.800");
+
     return (
-        <Flex position="fixed" top="0" left="0" width="full" zIndex="docked" boxShadow="md" paddingX="6" paddingY="3" alignItems="center">
+        <Flex position="fixed" top="0" left="0" width="full" zIndex="docked" boxShadow="md" paddingX="6" paddingY="3" alignItems="center" backgroundColor={navbarBackgroundColor}>
             {/* Logo/name */}
             <Link href="/" passHref><a>
                 <Heading>CazzPay</Heading>
