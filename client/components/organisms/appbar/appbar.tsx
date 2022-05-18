@@ -54,7 +54,7 @@ export default function AppBar() {
                                 <Link href="/seller/about" passHref><a><MenuItem icon={<HelpIcon size={16} />}>
                                     About
                                 </MenuItem></a></Link>
-                                <Link href={paypalState.loggedIn ? "/seller/dashboard" : "/login"} passHref><a><MenuItem icon={<LoginIcon size={16} />}>
+                                <Link href={paypalState.loggedIn ? "/seller/dashboard" : "/login?as=seller"} passHref><a><MenuItem icon={<LoginIcon size={16} />}>
                                     {paypalState.loggedIn ? "Dashboard" : "Login"}
                                 </MenuItem></a></Link>
                             </MenuList>
@@ -69,7 +69,7 @@ export default function AppBar() {
                                 <Link href="/liquidity-provider/about" passHref><a><MenuItem icon={<HelpIcon size={16} />}>
                                     About
                                 </MenuItem></a></Link>
-                                <Link href={paypalState.loggedIn ? "/liquidity-provider/dashboard" : "/login"} passHref><a><MenuItem icon={<LoginIcon size={16} />}>
+                                <Link href={paypalState.loggedIn ? "/liquidity-provider/dashboard" : "/login?as=liquidity-provider"} passHref><a><MenuItem icon={<LoginIcon size={16} />}>
                                     {paypalState.loggedIn ? "Dashboard" : "Login"}
                                 </MenuItem></a></Link>
                             </MenuList>
@@ -85,7 +85,7 @@ export default function AppBar() {
 
                                 {/* Seller */}
                                 <MenuGroup title='Seller'>
-                                    <Link href={paypalState.loggedIn ? "/seller/dashboard" : "/login"} passHref><a><MenuItemCustom icon={<LoginIcon size={16} />}>
+                                    <Link href={paypalState.loggedIn ? "/seller/dashboard" : "/login?as=seller"} passHref><a><MenuItemCustom icon={<LoginIcon size={16} />}>
                                         {paypalState.loggedIn ? "Dashboard" : "Login"}
                                     </MenuItemCustom></a></Link>
                                     <Link href="/seller/about" passHref><a><MenuItemCustom icon={<HelpIcon size={16} />}>
@@ -96,7 +96,7 @@ export default function AppBar() {
 
                                 {/* Liquidity provider */}
                                 <MenuGroup title='Liquidity provider'>
-                                    <Link href={paypalState.loggedIn ? "/liquidity-provider/dashboard" : "/login"} passHref><a><MenuItemCustom icon={<LoginIcon size={16} />}>
+                                    <Link href={paypalState.loggedIn ? "/liquidity-provider/dashboard" : "/login?as=liquidity-provider"} passHref><a><MenuItemCustom icon={<LoginIcon size={16} />}>
                                         {paypalState.loggedIn ? "Dashboard" : "Login"}
                                     </MenuItemCustom></a></Link>
                                     <Link href="/liquidity-provider/about" passHref><a><MenuItemCustom icon={<HelpIcon size={16} />}>
