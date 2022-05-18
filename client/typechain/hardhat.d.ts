@@ -17,13 +17,77 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC20__factory>;
     getContractFactory(
-      name: "IERC20Metadata",
+      name: "ERC20Burnable",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC20Metadata__factory>;
+    ): Promise<Contracts.ERC20Burnable__factory>;
     getContractFactory(
       name: "IERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC20__factory>;
+    getContractFactory(
+      name: "IERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC20__factory>;
+    getContractFactory(
+      name: "IUniswapV2Callee",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUniswapV2Callee__factory>;
+    getContractFactory(
+      name: "IUniswapV2ERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUniswapV2ERC20__factory>;
+    getContractFactory(
+      name: "IUniswapV2Factory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUniswapV2Factory__factory>;
+    getContractFactory(
+      name: "IUniswapV2Pair",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUniswapV2Pair__factory>;
+    getContractFactory(
+      name: "UniswapV2ERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.UniswapV2ERC20__factory>;
+    getContractFactory(
+      name: "UniswapV2Factory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.UniswapV2Factory__factory>;
+    getContractFactory(
+      name: "UniswapV2Pair",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.UniswapV2Pair__factory>;
+    getContractFactory(
+      name: "IERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC20__factory>;
+    getContractFactory(
+      name: "IUniswapV2Router01",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUniswapV2Router01__factory>;
+    getContractFactory(
+      name: "IUniswapV2Router02",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUniswapV2Router02__factory>;
+    getContractFactory(
+      name: "IWETH",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWETH__factory>;
+    getContractFactory(
+      name: "UniswapV2Router02",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.UniswapV2Router02__factory>;
+    getContractFactory(
+      name: "CazzPay",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.CazzPay__factory>;
+    getContractFactory(
+      name: "CazzPayOracle",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.CazzPayOracle__factory>;
+    getContractFactory(
+      name: "ICazzPayToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICazzPayToken__factory>;
     getContractFactory(
       name: "CazzPayToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -32,6 +96,18 @@ declare module "hardhat/types/runtime" {
       name: "MultiOwnable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MultiOwnable__factory>;
+    getContractFactory(
+      name: "TestCoin",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.TestCoin__factory>;
+    getContractFactory(
+      name: "UniswapFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.UniswapFactory__factory>;
+    getContractFactory(
+      name: "UniswapRouter",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.UniswapRouter__factory>;
 
     getContractAt(
       name: "ERC20",
@@ -39,15 +115,95 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ERC20>;
     getContractAt(
-      name: "IERC20Metadata",
+      name: "ERC20Burnable",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.IERC20Metadata>;
+    ): Promise<Contracts.ERC20Burnable>;
     getContractAt(
       name: "IERC20",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC20>;
+    getContractAt(
+      name: "IERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC20>;
+    getContractAt(
+      name: "IUniswapV2Callee",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUniswapV2Callee>;
+    getContractAt(
+      name: "IUniswapV2ERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUniswapV2ERC20>;
+    getContractAt(
+      name: "IUniswapV2Factory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUniswapV2Factory>;
+    getContractAt(
+      name: "IUniswapV2Pair",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUniswapV2Pair>;
+    getContractAt(
+      name: "UniswapV2ERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.UniswapV2ERC20>;
+    getContractAt(
+      name: "UniswapV2Factory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.UniswapV2Factory>;
+    getContractAt(
+      name: "UniswapV2Pair",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.UniswapV2Pair>;
+    getContractAt(
+      name: "IERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC20>;
+    getContractAt(
+      name: "IUniswapV2Router01",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUniswapV2Router01>;
+    getContractAt(
+      name: "IUniswapV2Router02",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUniswapV2Router02>;
+    getContractAt(
+      name: "IWETH",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWETH>;
+    getContractAt(
+      name: "UniswapV2Router02",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.UniswapV2Router02>;
+    getContractAt(
+      name: "CazzPay",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.CazzPay>;
+    getContractAt(
+      name: "CazzPayOracle",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.CazzPayOracle>;
+    getContractAt(
+      name: "ICazzPayToken",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ICazzPayToken>;
     getContractAt(
       name: "CazzPayToken",
       address: string,
@@ -58,6 +214,21 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.MultiOwnable>;
+    getContractAt(
+      name: "TestCoin",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.TestCoin>;
+    getContractAt(
+      name: "UniswapFactory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.UniswapFactory>;
+    getContractAt(
+      name: "UniswapRouter",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.UniswapRouter>;
 
     // default types
     getContractFactory(
