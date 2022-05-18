@@ -4,7 +4,7 @@
 
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { IERC20, IERC20Interface } from "../IERC20";
+import type { ICazzPayToken, ICazzPayTokenInterface } from "../ICazzPayToken";
 
 const _abi = [
   {
@@ -125,6 +125,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "burn",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "decimals",
     outputs: [
@@ -135,6 +148,24 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_mintTo",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_amtToMint",
+        type: "uint256",
+      },
+    ],
+    name: "mintTokens",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -231,12 +262,15 @@ const _abi = [
   },
 ];
 
-export class IERC20__factory {
+export class ICazzPayToken__factory {
   static readonly abi = _abi;
-  static createInterface(): IERC20Interface {
-    return new utils.Interface(_abi) as IERC20Interface;
+  static createInterface(): ICazzPayTokenInterface {
+    return new utils.Interface(_abi) as ICazzPayTokenInterface;
   }
-  static connect(address: string, signerOrProvider: Signer | Provider): IERC20 {
-    return new Contract(address, _abi, signerOrProvider) as IERC20;
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): ICazzPayToken {
+    return new Contract(address, _abi, signerOrProvider) as ICazzPayToken;
   }
 }
