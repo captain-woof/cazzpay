@@ -27,6 +27,8 @@ export function handlePurchaseConfirmed(event: PurchaseConfirmed): void {
 
   if (!!purchaseTransaction) { // Confirm only if transaction exists
     purchaseTransaction.confirmed = true;
+    purchaseTransaction.timestampOfConfirmation = event.block.timestamp;
+    
     purchaseTransaction.save();
   }
 }

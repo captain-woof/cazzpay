@@ -9,10 +9,10 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ cazzpay",
-    "create-local": "graph create --node http://localhost:8020/ cazzpay",
-    "remove-local": "graph remove --node http://localhost:8020/ cazzpay",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 cazzpay"
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ captain-woof/cazzpay",
+    "create-local": "graph create --node http://localhost:8020/ captain-woof/cazzpay",
+    "remove-local": "graph remove --node http://localhost:8020/ captain-woof/cazzpay",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 captain-woof/cazzpay"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.29.2",
