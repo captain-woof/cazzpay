@@ -1,0 +1,1 @@
+export type DeployEnv = "local" | "development" | "production";

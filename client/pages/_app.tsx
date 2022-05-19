@@ -4,6 +4,7 @@ import AppBar from '../components/organisms/appbar';
 import theme from '../theme';
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from '../store';
+import ConnectWalletDialog from '../components/organisms/connectWalletDialog';
 
 import "../styles/global.css";
 import "../styles/react-paginate.css";
@@ -18,6 +19,9 @@ function CazzPayApp({ Component, pageProps }: AppProps) {
 
         {/* Component to display */}
         <Component {...pageProps} />
+
+        {/* Wallet connection dialog */}
+        <ConnectWalletDialog />
 
       </ReduxProvider>
     </ChakraProvider>
