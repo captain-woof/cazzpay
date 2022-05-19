@@ -46,7 +46,7 @@ export default function LoginPage({ loginAs }: ILoginPage) {
                         }
                     </Text> :
                     <Text marginTop="4">
-                        You're already logged in!
+                        You&apos;re already logged in!
                     </Text>
                 }
 

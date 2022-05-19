@@ -5,6 +5,9 @@ import theme from '../theme';
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from '../store';
 
+import "../styles/global.css";
+import "../styles/react-paginate.css";
+
 function CazzPayApp({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider theme={theme}>

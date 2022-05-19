@@ -1,0 +1,10 @@
+.react-paginate-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.react-paginate-container>li {
+    list-style: none;
+}
