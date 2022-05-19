@@ -1,10 +1,11 @@
-import { Button, Flex, Heading, Hide, IconButton, Menu, MenuButton, MenuDivider, MenuGroup, MenuItem, MenuItemProps, MenuList, Show, useBreakpointValue, useColorMode, useColorModeValue } from "@chakra-ui/react";
+import { Button, Flex, Heading, Hide, IconButton, Menu, MenuButton, MenuDivider, MenuGroup, MenuItem, MenuItemProps, MenuList, Show, useBreakpointValue, useColorMode, useColorModeValue, useTheme } from "@chakra-ui/react";
 import { FiChevronDown as DownArrowIcon, FiSun as SunIcon, FiMoon as MoonIcon } from "react-icons/fi";
 import { HiMenuAlt4 as MenuIcon } from "react-icons/hi";
 import { BiHelpCircle as HelpIcon } from "react-icons/bi";
+import { FiLogOut as LogoutIcon } from "react-icons/fi";
 import { AiOutlineLogin as LoginIcon } from "react-icons/ai";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePaypal } from "../../../hooks/usePaypal";
 
 export default function AppBar() {
@@ -19,7 +20,7 @@ export default function AppBar() {
     const { colorMode, toggleColorMode } = useColorMode();
 
     // For Paypal
-    const { paypalState } = usePaypal();
+    const { paypalState, setPaypalLoggedInState, setPaypalUserInfo } = usePaypal();
 
     // Icon Button size
     const menuIconButtonSize = useBreakpointValue({ base: "md", md: "lg" });
@@ -27,6 +28,16 @@ export default function AppBar() {
 
     // Navbar background
     const navbarBackgroundColor = useColorModeValue("gray.50", "gray.800");
+
+    // Handle logout
+    const handleLogout = useCallback(() => {
+        window.alert("TODO: HANDLE LOGOUT");
+        setPaypalLoggedInState(false);
+        setPaypalUserInfo(null);
+    }, []);
+
+    // Theme
+    const theme = useTheme();
 
     return (
         <Flex position="fixed" top="0" left="0" width="full" zIndex="docked" boxShadow="md" paddingX="6" paddingY="3" alignItems="center" backgroundColor={navbarBackgroundColor}>
@@ -74,6 +85,13 @@ export default function AppBar() {
                                 </MenuItem></a></Link>
                             </MenuList>
                         </Menu>
+
+                        {/* Log out */}
+                        {paypalState.loggedIn &&
+                            <Button variant="unstyled" onClick={handleLogout} leftIcon={<LogoutIcon stroke={theme.colors.red["400"]} />} display="flex" color={theme.colors.red["400"]}>
+                                Logout
+                            </Button>
+                        }
                     </Show>
 
                     {/* Nav menu (small screens) */}
@@ -103,6 +121,14 @@ export default function AppBar() {
                                         Know more
                                     </MenuItemCustom></a></Link>
                                 </MenuGroup>
+                                <MenuDivider />
+
+                                {/* For logging out */}
+                                {paypalState.loggedIn &&
+                                    <MenuItem icon={<LogoutIcon size={16} stroke={theme.colors.red["400"]} />} onClick={handleLogout} color={theme.colors.red["400"]} _focus={{ background: "red.400", color: "gray.50" }}>
+                                        Logout
+                                    </MenuItem>
+                                }
 
                             </MenuList>
                         </Menu>

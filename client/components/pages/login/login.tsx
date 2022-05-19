@@ -12,12 +12,12 @@ interface ILoginPage {
 export default function LoginPage({ loginAs }: ILoginPage) {
 
     // For auth state
-    const { paypalState } = usePaypal();
+    const { paypalState, setPaypalLoggedInState } = usePaypal();
 
     // Function to handle login
     const handleLogin = useCallback(() => {
         window?.alert("TODO: LOGIN");
-    }, []);
+    }, [setPaypalLoggedInState]);
 
     // Next router
     const router = useRouter();
