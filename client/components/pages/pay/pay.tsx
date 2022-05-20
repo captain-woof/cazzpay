@@ -17,7 +17,7 @@ interface IPayPage {
 
 export default function PayPage({ email, id, name, pairs }: IPayPage) {
     // For Wallet connection
-    const { isConnected, isConnecting, showConnectDialog } = useWalletConnection();
+    const { isConnected, isConnecting, showConnectDialog, disconnect } = useWalletConnection();
 
     // For paying with crypto
     const { setPairSelectedForPayment, pairSelectedForPayment, tokenSelectedForPaymentPriceAtomic, numOfTokensToPayWith, setNumOfTokensToPayWith, fiatToBePaid, setFiatToBePaid, setWhatChanged, maxSlippage, setMaxSlippage, handlePayment, paymentInProgress, makeAnotherPayment, paymentDone } = usePayWithCrypto();
@@ -37,7 +37,7 @@ export default function PayPage({ email, id, name, pairs }: IPayPage) {
 
                 {/* Connect wallet box */}
                 {!paymentDone &&
-                    <Button marginTop={4} isLoading={isConnecting} loadingText="Connecting" onClick={showConnectDialog} display="flex" marginLeft="auto" rightIcon={<WalletIcon size={24} />} colorScheme="blue" variant="outline">
+                    <Button marginTop={4} isLoading={isConnecting} loadingText="Connecting" onClick={!isConnected ? showConnectDialog : disconnect} display="flex" marginLeft="auto" rightIcon={<WalletIcon size={24} />} colorScheme="blue" variant="outline">
                         {isConnected ? "Connected" : "Connect wallet"}
                     </Button>
                 }
