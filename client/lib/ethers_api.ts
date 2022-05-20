@@ -6,6 +6,15 @@
 
 import { BigNumber, ethers, Signer } from "ethers";
 import { CazzPay } from "../typechain";
+import {
+  AddedLiquidityToCzpAndOtherTokenPairEvent,
+  BoughtWithCryptoEvent,
+  CreatedPairWithCzpAndOtherTokenEvent,
+  PurchaseConfirmedEvent,
+  SellerInfoEvent,
+  TokensSwappedEvent,
+  WithdrawnLiquidityFromCzpAndOtherTokenPairEvent,
+} from "../typechain/CazzPay";
 import CazzPayInterface from "../contracts/CazzPay.json";
 const contractAddress: string = process.env.CAZZPAY_TOKEN_ADDRESS as string;
 
@@ -38,26 +47,45 @@ export async function createPairWithCzpAndOtherToken(
   const txn = await CazzPayContract.createPairWithCzpAndOtherToken(
     otherTokenAddress
   );
-  const events = txn.wait();
+  const { events } = await txn.wait();
+  const { pairAddr, otherTokenContractAddr } = (
+    events?.find(
+      ({ event }) => event === "CreatedPairWithCzpAndOtherToken"
+    ) as CreatedPairWithCzpAndOtherTokenEvent
+  )?.args;
+  return {
+    pairAddr,
+    otherTokenContractAddr,
+  };
 }
-export async function createPairWithCzpAndEth() {
-  await CazzPayContract.createPairWithCzpAndEth();
+export async function createPairWithCzpAndEth(signer: Signer) {
+  /** Wallet balance???? */
+  const tx = await CazzPayContract.createPairWithCzpAndEth();
+  const { events } = await tx.wait();
+  const { pairAddr, otherTokenContractAddr } = (
+    events?.find(
+      ({ event }) => event === "CreatedPairWithCzpAndOtherToken"
+    ) as CreatedPairWithCzpAndOtherTokenEvent
+  )?.args;
+  return {
+    pairAddr,
+    otherTokenContractAddr,
+  };
 }
 
 export async function getCzpAndOtherTokenPairAddr(otherTokenAddress: string) {
-  await CazzPayContract.getCzpAndOtherTokenPairAddr(otherTokenAddress);
+  return await CazzPayContract.getCzpAndOtherTokenPairAddr(otherTokenAddress);
 }
 
 export async function getAllPairsWithCzpAndOtherToken() {
-  await CazzPayContract.getAllPairsWithCzpAndOtherToken();
+  return await CazzPayContract.getAllPairsWithCzpAndOtherToken();
 }
 
 /** function to add liquidity to czp-any token pair
  * @params - signer to sign the transaction
  * @params - other token address
  * @params - czp token amount to deposit
- * @params - other token amount to deposit
- */
+ * @params - other token amount to deposit */
 export async function addLiquidityToCzpAndOtherTokenPair(
   signer: Signer,
   otherTokenAddress: string,
@@ -69,7 +97,7 @@ export async function addLiquidityToCzpAndOtherTokenPair(
     otherTokenAmountToDeposit
   );
 
-  await CazzPayContract.addLiquidityToCzpAndOtherTokenPair(
+  const tx = await CazzPayContract.addLiquidityToCzpAndOtherTokenPair(
     otherTokenAddress,
     parsedCzpAmount,
     parsedOtherTokenAmonut,
@@ -77,13 +105,31 @@ export async function addLiquidityToCzpAndOtherTokenPair(
     getValReduced(parsedOtherTokenAmonut, 2),
     getDeadline()
   );
+  const { events } = await tx.wait();
+  const {
+    otherTokenAmtAdded,
+    czpAmtAdded,
+    otherTokenContractAddr,
+    liquidityProviderAddr,
+    liquidityTokensMinted,
+  } = (
+    events?.find(
+      ({ event }) => event === "AddedLiquidityToCzpAndOtherTokenPair"
+    ) as AddedLiquidityToCzpAndOtherTokenPairEvent
+  )?.args;
+  return {
+    otherTokenAmtAdded,
+    czpAmtAdded,
+    otherTokenContractAddr,
+    liquidityProviderAddr,
+    liquidityTokensMinted,
+  };
 }
 /** function to add liquidity to czp-eth pair
  * @params - signer as a Signer type
  * @params - czp token amount to be deposited
  * @params - eth amount to deposit
- * payable function so we need to specify the Eth amount
- */
+ * payable function so we need to specify the Eth amount */
 export async function addLiquidityToCzpAndEthPair(
   signer: Signer,
   czpAmountToDeposit: string,
@@ -91,13 +137,33 @@ export async function addLiquidityToCzpAndEthPair(
 ) {
   const parsedCzpAmount = ethers.utils.parseEther(czpAmountToDeposit);
   const parsedEthAmount = ethers.utils.parseEther(ethAmountToDeposit);
-  await CazzPayContract.addLiquidityToCzpAndEthPair(
+  const tx = await CazzPayContract.addLiquidityToCzpAndEthPair(
     czpAmountToDeposit,
     getValReduced(parsedCzpAmount, 2),
     getValReduced(parsedEthAmount, 2),
     getDeadline(),
     { value: parsedEthAmount }
   );
+  const { events } = await tx.wait();
+  const {
+    otherTokenAmtAdded,
+    czpAmtAdded,
+    otherTokenContractAddr,
+    liquidityProviderAddr,
+    liquidityTokensMinted,
+  } = (
+    events?.find(
+      ({ event }) => event === "AddedLiquidityToCzpAndOtherTokenPair"
+    ) as AddedLiquidityToCzpAndOtherTokenPairEvent
+  )?.args;
+
+  return {
+    otherTokenAmtAdded,
+    czpAmtAdded,
+    otherTokenContractAddr,
+    liquidityProviderAddr,
+    liquidityTokensMinted,
+  };
 }
 /** Function to withdraw liquidity for czp-other token pair
  * @params - signer as a Signer
@@ -118,13 +184,26 @@ export async function withdrawLiquidityForCzpAndOtherToken(
   );
   //uniswap to be implemented
 
-  await CazzPayContract.withdrawLiquidityForCzpAndOtherToken(
+  const tx = await CazzPayContract.withdrawLiquidityForCzpAndOtherToken(
     otherTokenAddress,
     liquidityToWithdraw,
     minCzpToRecieve,
     minOtherTokenToRecieve,
     getDeadline()
   );
+  const { events } = await tx.wait();
+  const { czpAmtWithdrawn, otherTokenAmtWithdrawn, liquidityTokensSubmitted } =
+    (
+      events?.find(
+        ({ event }) => event === "WithdrawnLiquidityFromCzpAndOtherTokenPair"
+      ) as WithdrawnLiquidityFromCzpAndOtherTokenPairEvent
+    ).args;
+
+  return {
+    czpAmtWithdrawn,
+    otherTokenAmtWithdrawn,
+    liquidityTokensSubmitted,
+  };
 }
 
 /** Function to withdraw liquidity from CZP-ETH pair
@@ -140,12 +219,28 @@ export async function withdrawLiquidityForCzpAndEth(
   minEthToRecieve: BigNumber
 ) {
   /** uniswap to be implemented */
-  await CazzPayContract.withdrawLiquidityForCzpAndEth(
+  const tx = await CazzPayContract.withdrawLiquidityForCzpAndEth(
     liquidityToWithdraw,
     minCzpToRecieve,
     minEthToRecieve,
     getDeadline()
   );
+  const { events } = await tx.wait();
+  const {
+    czpAmtWithdrawn,
+    otherTokenAmtWithdrawn: ethTokenAmtWithdrawn,
+    liquidityTokensSubmitted,
+  } = (
+    events?.find(
+      ({ event }) => event === "WithdrawnLiquidityFromCzpAndOtherTokenPair"
+    ) as WithdrawnLiquidityFromCzpAndOtherTokenPairEvent
+  ).args;
+
+  return {
+    czpAmtWithdrawn,
+    ethTokenAmtWithdrawn,
+    liquidityTokensSubmitted,
+  };
 }
 /** Function to buy things with any crypto Token
  * @params signer as a Signer
@@ -156,7 +251,7 @@ export async function withdrawLiquidityForCzpAndEth(
  */
 export async function buyWithCryptoToken(
   signer: Signer,
-  recipientAccountId: string,
+  recipientAccountIdToPay: string,
   otherTokenAddress: string,
   otherTokenAmount: string,
   fiatAmtToPay: string
@@ -165,13 +260,36 @@ export async function buyWithCryptoToken(
   const parsedFiatAmt = ethers.utils.parseEther(fiatAmtToPay);
   const parsedOtherTokenAmt = ethers.utils.parseEther(otherTokenAmount);
   const maxOtherTokenAmount = getValIncreased(parsedOtherTokenAmt, 2);
-  await CazzPayContract.buyWithCryptoToken(
-    recipientAccountId,
+  const tx = await CazzPayContract.buyWithCryptoToken(
+    recipientAccountIdToPay,
     otherTokenAddress,
     maxOtherTokenAmount,
     parsedFiatAmt,
     getDeadline()
   );
+  const { events } = await tx.wait();
+  const buyEvent = events?.find(
+    ({ event }) => event === "BoughtWithCrypto"
+  ) as BoughtWithCryptoEvent;
+  const {
+    payerWalletAddr,
+    recipientAccountId,
+    cazzPayTransactionId,
+    tokenAmtUsedForPurchased,
+    tokenUsedForPurchaseContractAddr,
+    fiatAmountPaid,
+    fiatAmountToPayToSeller,
+  } = buyEvent?.args;
+
+  return {
+    payerWalletAddr,
+    recipientAccountId,
+    cazzPayTransactionId,
+    tokenAmtUsedForPurchased,
+    tokenUsedForPurchaseContractAddr,
+    fiatAmountPaid,
+    fiatAmountToPayToSeller,
+  };
 }
 /** Function to buy things with Ethereum
  * @params signer as a Signer
@@ -180,17 +298,40 @@ export async function buyWithCryptoToken(
  */
 export async function buyWithEth(
   signer: Signer,
-  recipientAccountId: string,
+  recipientAccountIdToPay: string,
   fiatAmtToPay: string
 ) {
   //Redstone to be implemented
   const parsedFiatAmt = ethers.utils.parseEther(fiatAmtToPay);
-  await CazzPayContract.buyWithEth(
-    recipientAccountId,
+  const tx = await CazzPayContract.buyWithEth(
+    recipientAccountIdToPay,
     fiatAmtToPay,
     getDeadline(),
     {}
   );
+  const { events } = await tx.wait();
+  const buyEvent = events?.find(
+    ({ event }) => event === "BoughtWithCrypto"
+  ) as BoughtWithCryptoEvent;
+  const {
+    payerWalletAddr,
+    recipientAccountId,
+    cazzPayTransactionId,
+    tokenAmtUsedForPurchased,
+    tokenUsedForPurchaseContractAddr,
+    fiatAmountPaid,
+    fiatAmountToPayToSeller,
+  } = buyEvent?.args;
+
+  return {
+    payerWalletAddr,
+    recipientAccountId,
+    cazzPayTransactionId,
+    tokenAmtUsedForPurchased,
+    tokenUsedForPurchaseContractAddr,
+    fiatAmountPaid,
+    fiatAmountToPayToSeller,
+  };
 }
 /** Function to swap other token for czp
  * @params signer as Signer
@@ -206,12 +347,28 @@ export async function swapOtherTokensForCzp(
 ) {
   const parsedOtherTokenAmount = ethers.utils.parseEther(otherTokenAmtToSwap);
   const minCzpToGetParsed = ethers.utils.parseEther(czpMinAmt);
-  await CazzPayContract.swapOtherTokensForCzp(
+  const tx = await CazzPayContract.swapOtherTokensForCzp(
     otherTokenContractAddress,
     parsedOtherTokenAmount,
     minCzpToGetParsed,
     getDeadline()
   );
+  const { events } = await tx.wait();
+  const {
+    inputTokenAmt,
+    inputTokenContractAddr,
+    outputTokenAmt,
+    outputTokenContractAddr,
+  } = (
+    events?.find(({ event }) => event === "TokensSwapped") as TokensSwappedEvent
+  )?.args;
+
+  return {
+    inputTokenAmt,
+    inputTokenContractAddr,
+    outputTokenAmt,
+    outputTokenContractAddr,
+  };
 }
 /** Function to swap czp for other tokens
  * @params signer as Signer
@@ -227,21 +384,57 @@ export async function swapCzpForOtherTokens(
 ) {
   const parsedCzpAmountToSwap = ethers.utils.parseEther(czpAmtToSwap);
   const otherTokenMinAmtToGetParsed = ethers.utils.parseEther(otherTokenMinAmt);
-  await CazzPayContract.swapCzpForOtherTokens(
+  const tx = await CazzPayContract.swapCzpForOtherTokens(
     otherTokenAddress,
     parsedCzpAmountToSwap,
     otherTokenMinAmtToGetParsed,
     getDeadline()
   );
+  const { events } = await tx.wait();
+  const {
+    inputTokenAmt,
+    inputTokenContractAddr,
+    outputTokenAmt,
+    outputTokenContractAddr,
+  } = (
+    events?.find(({ event }) => event === "TokensSwapped") as TokensSwappedEvent
+  )?.args;
+
+  return {
+    inputTokenAmt,
+    inputTokenContractAddr,
+    outputTokenAmt,
+    outputTokenContractAddr,
+  };
 }
 
 export async function storeSellerInfo(
-  sellerId: string,
+  sellerIdToStore: string,
   sellerEmail: string,
   sellerName: string
 ) {
-  await CazzPayContract.storeSellerInfo(sellerId, sellerEmail, sellerName);
+  const tx = await CazzPayContract.storeSellerInfo(
+    sellerIdToStore,
+    sellerEmail,
+    sellerName
+  );
+  const { events } = await tx.wait();
+  const { sellerId, email, name } = (
+    events?.find(({ event }) => event === "SellerInfo") as SellerInfoEvent
+  )?.args;
+  return {
+    sellerId,
+    email,
+    name,
+  };
 }
 export async function setPurchaseConfirmation(transactionId: string) {
-  await CazzPayContract.setPurchaseConfirmation(transactionId);
+  const tx = await CazzPayContract.setPurchaseConfirmation(transactionId);
+  const { events } = await tx.wait();
+  const { cazzPayTransactionId } = (
+    events?.find(
+      ({ event }) => event === "PurchaseConfirmed"
+    ) as PurchaseConfirmedEvent
+  )?.args;
+  return { cazzPayTransactionId };
 }
