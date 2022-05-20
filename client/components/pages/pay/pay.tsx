@@ -6,19 +6,13 @@ import Select from "react-select";
 import { IoWallet as WalletIcon } from "react-icons/io5";
 import { MdSend as SendIcon } from "react-icons/md";
 import { ethers } from "ethers";
-
-interface Pair {
-    pairAddr: string;
-    otherTokenAddr: string;
-    otherTokenName: string;
-    otherTokenSymbol: string;
-}
+import { UniswapPair } from "../../../types/pair";
 
 interface IPayPage {
     email: string;
     name: string;
     id: string;
-    pairs: Array<Pair>;
+    pairs: Array<UniswapPair>;
 }
 
 export default function PayPage({ email, id, name, pairs }: IPayPage) {

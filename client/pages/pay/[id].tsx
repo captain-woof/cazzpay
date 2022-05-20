@@ -1,5 +1,6 @@
 import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "next";
 import PayPage from "../../components/pages/pay";
+import { UniswapPair } from "../../types/pair";
 
 export const getStaticPaths: GetStaticPaths = async () => {
 
@@ -29,7 +30,7 @@ export const getStaticProps = async ({ params }: GetStaticPropsContext) => {
         const name = "Sohail Saha";
 
         // TODO: FETCH PAIR INFORMATION
-        const pairs = [{
+        const pairs: Array<UniswapPair> = [{
             pairAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
             otherTokenAddr: "",
             otherTokenName: "Ether",
