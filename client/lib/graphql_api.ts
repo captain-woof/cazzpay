@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Seller, Transaction } from "../types/graph";
-const graphEndpoint: string = process.env.GRAPH_API_ENDPOINT as string;
+const graphEndpoint: string = process.env
+  .NEXT_PUBLIC_GRAPH_API_ENDPOINT as string;
 
 /** Get Seller Details
  * @params sellerId for a particular seller

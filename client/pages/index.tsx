@@ -14,7 +14,7 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
         <Link
-          href={`https://www.sandbox.paypal.com/connect?flowEntry=static&client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&scope=openid profile email&redirect_uri=http://redirectmeto.com/http://localhost:3000/dashboard`}
+          href={`https://www.sandbox.paypal.com/connect?flowEntry=static&client_id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&scope=openid profile email&redirect_uri=http://redirectmeto.com/http://localhost:3000/dashboard`}
         >
           <button id="loginBtn">Login</button>
         </Link>

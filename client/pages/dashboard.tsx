@@ -38,7 +38,7 @@ const Dashboard = ({ userData }: DashBoardProps) => {
       <p>{userData.paypalId}</p>
       <PayPalScriptProvider
         options={{
-          "client-id": process.env.NEXT_PUBLIC_CLIENT_ID as string,
+          "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID as string,
         }}
       >
         <label>Enter amount</label>
