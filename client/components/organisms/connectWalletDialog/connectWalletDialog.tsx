@@ -1,12 +1,12 @@
 import { Grid, GridItem, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Text } from "@chakra-ui/react";
-import useConnection from "../../../hooks/useConnection";
+import useWalletConnection from "../../../hooks/useWalletConnection";
 import MetamaskIcon from "../../../icons/MetamaskIcon";
 import WalletConnectIcon from "../../../icons/WalletConnectIcon";
 import WalletLinkIcon from "../../../icons/WalletLinkIcon";
 import OtherWalletIcon from "../../../icons/OtherWalletIcon";
 
 export default function ConnectWalletDialog() {
-    const { connectDialogVisible, hideConnectDialog, connect } = useConnection();
+    const { connectDialogVisible, hideConnectDialog, connect } = useWalletConnection();
 
     return (
         <Modal isOpen={connectDialogVisible} onClose={hideConnectDialog} isCentered size="xl">

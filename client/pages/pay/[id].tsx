@@ -22,18 +22,31 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps = async ({ params }: GetStaticPropsContext) => {
     const id = params?.id;
-    let email, name;
 
     if (!!id) {
         // TODO: FETCH SELLER INFO USING ID
-        email = "sohail@email.com";
-        name = "Sohail Saha";
+        const email = "sohail@email.com";
+        const name = "Sohail Saha";
+
+        // TODO: FETCH PAIR INFORMATION
+        const pairs = [{
+            pairAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
+            otherTokenAddr: "",
+            otherTokenName: "Ether",
+            otherTokenSymbol: "ETH"
+        }, {
+            pairAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
+            otherTokenAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
+            otherTokenName: "TestCoin",
+            otherTokenSymbol: "TST"
+        }];
 
         return {
             props: {
                 id,
                 email,
-                name
+                name,
+                pairs
             },
             revalidate: 1
         }
@@ -45,8 +58,8 @@ export const getStaticProps = async ({ params }: GetStaticPropsContext) => {
     }
 }
 
-export default function Pay({ id, email, name }: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Pay({ id, email, name, pairs }: InferGetStaticPropsType<typeof getStaticProps>) {
     return (
-        <PayPage id={id} email={email} name={name} />
+        <PayPage id={id} email={email} name={name} pairs={pairs} />
     )
 }

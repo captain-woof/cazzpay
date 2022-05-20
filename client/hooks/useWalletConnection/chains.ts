@@ -24,20 +24,22 @@ const ETH: NativeCurrency = {
 /**
  * @summary Mapping between chainIDs and their RPC urls, name, symbol, etc, only for Testnets
  */
-export const CHAINS_TEST: { [chainId: number]: ChainInfo } = {
-    "4": {
+export const CHAINS_TEST: { [chainId: string]: ChainInfo } = {
+    "0x4": {
         urls: [`https://rinkeby.infura.io/v3/${process.env.INFURA_PROJECT_ID}`],
         name: 'Rinkeby',
+        nativeCurrency: ETH
     }
 }
 
 /**
  * @summary Mapping between chainIDs and their RPC urls, name, symbol, etc, only for Mainnets
  */
-export const CHAINS_MAIN: { [chainId: number]: ChainInfo } = {
-    "1": {
+export const CHAINS_MAIN: { [chainId: string]: ChainInfo } = {
+    "0x1": {
         urls: [`https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`],
         name: 'Mainnet',
+        nativeCurrency: ETH
     }
 }
 
@@ -45,7 +47,7 @@ export const CHAINS_MAIN: { [chainId: number]: ChainInfo } = {
  * @summary Returns chains based on the deployment URL
  * @returns Mapping between chain ids and the chain details like name, rpc urls, etc
  */
-export const getChainsBasedOnEnv = (): { [chainId: number]: ChainInfo } => getValueBasedOnEnv({
+export const getChainsBasedOnEnv = (): { [chainId: string]: ChainInfo } => getValueBasedOnEnv({
     local: CHAINS_TEST,
     development: CHAINS_TEST,
     production: CHAINS_MAIN
@@ -55,8 +57,8 @@ export const getChainsBasedOnEnv = (): { [chainId: number]: ChainInfo } => getVa
  * @summary Returns mapping between chainIDs and their RPC url
  * @returns Mapping between chainIDs and array of RPC url
  */
-export const getRpcUrls = (): { [chainId: number]: string } => {
-    const rpcUrls: { [chainId: number | string]: string } = {};
+export const getRpcUrls = (): { [chainId: string]: string } => {
+    const rpcUrls: { [chainId: string]: string } = {};
     const chains = getValueBasedOnEnv({
         local: CHAINS_TEST,
         development: CHAINS_TEST,
@@ -64,7 +66,7 @@ export const getRpcUrls = (): { [chainId: number]: string } => {
     });
 
     Object.keys(chains).forEach((chainId) => {
-        rpcUrls[chainId] = chains[parseInt(chainId)].urls[0] as string;
+        rpcUrls[chainId] = chains[chainId].urls[0] as string;
     });
 
     return rpcUrls;

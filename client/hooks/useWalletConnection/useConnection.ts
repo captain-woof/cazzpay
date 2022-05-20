@@ -11,7 +11,7 @@ import { actionGenerators as connectionActionGenerators } from "../../store/redu
 import { ethers } from "ethers";
 import { useToast } from "@chakra-ui/react";
 
-export const useConnection = () => {
+export const useWalletConnection = () => {
     const dispatch: AppDispatch = useDispatch();
     const { activate, active, deactivate, account, chainId, connector, library } = useWeb3React();
     const toast = useToast();
@@ -78,6 +78,35 @@ export const useConnection = () => {
 
             // Authenticate via wallet
             await activate(connector, (e) => { throw new Error(e.message) });
+
+            const chainIdCorrect = Object.keys(chains)[0];
+            const chainIdCurrent = "0x" + parseInt((await connector.getChainId()).toString()).toString(16);
+
+            // Switch network
+            if ("ethereum" in window && walletChosen === "metamask" && process.env.NEXT_PUBLIC_DEPLOY_ENV !== "local") {
+                try {
+                    await window.ethereum.request({
+                        method: "wallet_addEthereumChain",
+                        params: [{
+                            chainId: chainIdCorrect,
+                            rpcUrls: chains[chainIdCorrect].urls,
+                            chainName: chains[chainIdCorrect].name,
+                            nativeCurrency: chains[chainIdCorrect].nativeCurrency,
+                            blockExplorerUrls: chains[chainIdCorrect].blockExplorerUrls
+                        }]
+                    });
+                } catch {
+                    if (chainIdCorrect.toLowerCase() !== chainIdCurrent.toLowerCase()) {
+                        toast({
+                            title: `Switch to ${chains[chainIdCorrect].name}`,
+                            description: "Please switch to the correct chain and refresh!",
+                            status: "error",
+                            position: "bottom"
+                        });
+                    }
+                }
+            }
+
             setShowConnectionDialog(false);
             setWalletPreConnected(walletChosen);
 
