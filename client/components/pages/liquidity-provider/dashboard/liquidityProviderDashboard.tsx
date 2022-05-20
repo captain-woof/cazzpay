@@ -21,7 +21,7 @@ export default function LiquidityProviderDashboardPage({ email, id, name, pairs 
     const { paypalState, setPaypalUserInfo, setPaypalLoggedInState } = usePaypal();
 
     // For liquidity provider funcs
-    const { setPairSelected, pairSelected, pairDialogVisible, pairInfo, pairInfoProgress, liquidityToWithdraw, setLiquidityToWithdraw, minCzpToWithdraw, minOtherTokenToWithdraw, setMinCzpToWithdraw, setMinOtherTokenToWithdraw, handleWithdrawLiquidity, liquidityWithdrawProgress } = useLiquidityProvider();
+    const { setPairSelected, pairSelected, pairDialogVisible, pairInfo, pairInfoProgress, liquidityToWithdraw, setLiquidityToWithdraw, minCzpToWithdraw, minOtherTokenToWithdraw, setMinCzpToWithdraw, setMinOtherTokenToWithdraw, handleWithdrawLiquidity, liquidityWithdrawProgress, czpPriceAtomic, otherTokenPriceAtomic, czpToDeposit, setCzpToDeposit, otherTokenToDeposit, setOtherTokenToDeposit, czpToDepositSlippage, setCzpToDepositSlippage, otherTokenToDepositSlippage, setOtherTokenToDepositSlippage, addLiquidityProgress, handleAddLiquidity, setWhatChanged } = useLiquidityProvider();
 
     // To set Paypal auth information
     useEffect(() => {
@@ -61,7 +61,7 @@ export default function LiquidityProviderDashboardPage({ email, id, name, pairs 
             </Grid>
 
             {/* Pair Dialog */}
-            <PairDialog pairDialogVisible={pairDialogVisible} pairSelected={pairSelected} setPairSelected={setPairSelected} pairInfo={pairInfo} pairInfoProgress={pairInfoProgress} liquidityToWithdraw={liquidityToWithdraw} setLiquidityToWithdraw={setLiquidityToWithdraw} minCzpToWithdraw={minCzpToWithdraw} minOtherTokenToWithdraw={minOtherTokenToWithdraw} setMinCzpToWithdraw={setMinCzpToWithdraw} setMinOtherTokenToWithdraw={setMinOtherTokenToWithdraw} handleWithdrawLiquidity={handleWithdrawLiquidity} liquidityWithdrawProgress={liquidityWithdrawProgress} />
+            <PairDialog pairDialogVisible={pairDialogVisible} pairSelected={pairSelected} setPairSelected={setPairSelected} pairInfo={pairInfo} pairInfoProgress={pairInfoProgress} liquidityToWithdraw={liquidityToWithdraw} setLiquidityToWithdraw={setLiquidityToWithdraw} minCzpToWithdraw={minCzpToWithdraw} minOtherTokenToWithdraw={minOtherTokenToWithdraw} setMinCzpToWithdraw={setMinCzpToWithdraw} setMinOtherTokenToWithdraw={setMinOtherTokenToWithdraw} handleWithdrawLiquidity={handleWithdrawLiquidity} liquidityWithdrawProgress={liquidityWithdrawProgress} czpPriceAtomic={czpPriceAtomic} otherTokenPriceAtomic={otherTokenPriceAtomic} czpToDeposit={czpToDeposit} setCzpToDeposit={setCzpToDeposit} otherTokenToDeposit={otherTokenToDeposit} setOtherTokenToDeposit={setOtherTokenToDeposit} czpToDepositSlippage={czpToDepositSlippage} setCzpToDepositSlippage={setCzpToDepositSlippage} otherTokenToDepositSlippage={otherTokenToDepositSlippage} setOtherTokenToDepositSlippage={setOtherTokenToDepositSlippage} addLiquidityProgress={addLiquidityProgress} handleAddLiquidity={handleAddLiquidity} setWhatChanged={setWhatChanged} />
 
         </Container>
     )

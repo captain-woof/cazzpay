@@ -1,10 +1,11 @@
-import { Button, Flex, FormControl, FormHelperText, FormLabel, Grid, Heading, Input, Modal, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Spinner, Tab, TabList, TabPanel, TabPanels, Tabs, Text } from "@chakra-ui/react";
+import { Button, Flex, FormControl, FormHelperText, FormLabel, Grid, Heading, Input, Modal, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Radio, RadioGroup, Spinner, Stack, Tab, TabList, TabPanel, TabPanels, Tabs, Text } from "@chakra-ui/react";
 import { ethers } from "ethers";
 import { Dispatch, SetStateAction } from "react";
 import { UniswapPair, UniswapPairInfo } from "../../../../types/pair";
 import BN from "bignumber.js";
 import useWalletConnection from "../../../../hooks/useWalletConnection";
 import { IoWallet as WalletIcon } from "react-icons/io5";
+import { MdSend as SendIcon } from "react-icons/md";
 
 interface IPairDialog {
     pairSelected: UniswapPair | null;
@@ -20,9 +21,22 @@ interface IPairDialog {
     setMinOtherTokenToWithdraw: Dispatch<SetStateAction<string>>;
     liquidityWithdrawProgress: boolean;
     handleWithdrawLiquidity: () => Promise<void>;
+    czpPriceAtomic: string;
+    otherTokenPriceAtomic: string;
+    czpToDeposit: string;
+    setCzpToDeposit: Dispatch<SetStateAction<string>>;
+    otherTokenToDeposit: string;
+    setOtherTokenToDeposit: Dispatch<SetStateAction<string>>;
+    czpToDepositSlippage: string;
+    setCzpToDepositSlippage: Dispatch<SetStateAction<string>>;
+    otherTokenToDepositSlippage: string;
+    setOtherTokenToDepositSlippage: Dispatch<SetStateAction<string>>;
+    addLiquidityProgress: boolean;
+    handleAddLiquidity: () => Promise<void>;
+    setWhatChanged: Dispatch<SetStateAction<"czpAmt" | "otherTokenAmt">>;
 }
 
-export default function PairDialog({ pairDialogVisible, pairSelected, setPairSelected, pairInfo, pairInfoProgress, liquidityToWithdraw, minCzpToWithdraw, minOtherTokenToWithdraw, setLiquidityToWithdraw, setMinCzpToWithdraw, setMinOtherTokenToWithdraw, handleWithdrawLiquidity, liquidityWithdrawProgress }: IPairDialog) {
+export default function PairDialog({ pairDialogVisible, pairSelected, setPairSelected, pairInfo, pairInfoProgress, liquidityToWithdraw, minCzpToWithdraw, minOtherTokenToWithdraw, setLiquidityToWithdraw, setMinCzpToWithdraw, setMinOtherTokenToWithdraw, handleWithdrawLiquidity, liquidityWithdrawProgress, czpPriceAtomic, czpToDeposit, czpToDepositSlippage, otherTokenPriceAtomic, otherTokenToDeposit, otherTokenToDepositSlippage, setCzpToDeposit, setCzpToDepositSlippage, setOtherTokenToDeposit, setOtherTokenToDepositSlippage, addLiquidityProgress, setWhatChanged, handleAddLiquidity }: IPairDialog) {
 
     // For Wallet connection
     const { isConnected, isConnecting, showConnectDialog, disconnect } = useWalletConnection();
@@ -99,7 +113,65 @@ export default function PairDialog({ pairDialogVisible, pairSelected, setPairSel
 
                                 {/* For deposit */}
                                 <TabPanel>
-                                    Deposit
+
+                                    {/* Conversion */}
+                                    <Heading textAlign="center" marginTop={6}>
+                                        1 ${pairSelected?.otherTokenSymbol} = <Text as="span" color="blue.400">{(new BN(otherTokenPriceAtomic)).div(czpPriceAtomic).toFixed(2)} $CZP</Text>
+                                    </Heading>
+
+                                    {/* Other token amt to deposit */}
+                                    <FormControl marginTop={6} isDisabled={!(isConnected && !!pairSelected)}>
+                                        <FormLabel htmlFor="other-token-to-deposit">
+                                            ${pairSelected?.otherTokenSymbol} amount to deposit
+                                        </FormLabel>
+                                        <Input id="other-token-to-deposit" name="other-token-to-deposit" value={otherTokenToDeposit} onChange={(e) => { setWhatChanged("otherTokenAmt"); setOtherTokenToDeposit(e.target.value) }} colorScheme="blue" type="number" placeholder="XXX.XX" />
+                                        <FormHelperText>${pairSelected?.otherTokenSymbol} to add to this pair as liquidity</FormHelperText>
+                                    </FormControl>
+
+                                    {/* Other token Slippage */}
+                                    <FormControl marginTop={8} isDisabled={!(isConnected && !!pairSelected)}>
+                                        <FormLabel htmlFor="other-token-max-slippage-percentage">${pairSelected?.otherTokenSymbol} max slippage</FormLabel>
+
+                                        <RadioGroup id="other-token-max-slippage-percentage" name="other-token-max-slippage-percentage" onChange={setOtherTokenToDepositSlippage} value={otherTokenToDepositSlippage} colorScheme="blue">
+                                            <Stack direction='row' spacing={{ base: 2, md: 6 }} justifyContent={{ base: "center", md: "flex-start" }}>
+                                                {["0", "2", "5", "10", "20"].map((perc) => (
+                                                    <Radio key={perc} value={perc}>{perc}%</Radio>
+                                                ))}
+                                            </Stack>
+                                        </RadioGroup>
+
+                                        <FormHelperText>Any remaining tokens would be immediately refunded.</FormHelperText>
+                                    </FormControl>
+
+                                    {/* CZP amt to deposit */}
+                                    <FormControl marginTop={8} isDisabled={!(isConnected && !!pairSelected)}>
+                                        <FormLabel htmlFor="czp-to-deposit">
+                                            $CZP amount to deposit
+                                        </FormLabel>
+                                        <Input id="czp-to-deposit" name="czp-to-deposit" value={czpToDeposit} onChange={(e) => { setWhatChanged("czpAmt"); setCzpToDeposit(e.target.value) }} colorScheme="blue" type="number" placeholder="XXX.XX" />
+                                        <FormHelperText>$CZP to add to this pair as liquidity</FormHelperText>
+                                    </FormControl>
+
+                                    {/* Other token Slippage */}
+                                    <FormControl marginTop={8} isDisabled={!(isConnected && !!pairSelected)}>
+                                        <FormLabel htmlFor="czp-max-slippage-percentage">$CZP max slippage</FormLabel>
+
+                                        <RadioGroup id="czp-max-slippage-percentage" name="czp-max-slippage-percentage" onChange={setCzpToDepositSlippage} value={czpToDepositSlippage} colorScheme="blue">
+                                            <Stack direction='row' spacing={{ base: 2, md: 6 }} justifyContent={{ base: "center", md: "flex-start" }}>
+                                                {["0", "2", "5", "10", "20"].map((perc) => (
+                                                    <Radio key={perc} value={perc}>{perc}%</Radio>
+                                                ))}
+                                            </Stack>
+                                        </RadioGroup>
+
+                                        <FormHelperText>Any remaining tokens would be immediately refunded.</FormHelperText>
+                                    </FormControl>
+
+                                    {/* Add liquidity button */}
+                                    <Button marginTop={8} colorScheme="blue" isLoading={addLiquidityProgress} loadingText="Adding" display="flex" marginLeft="auto" disabled={!(isConnected && pairSelected)} rightIcon={<SendIcon size={24} />} onClick={handleAddLiquidity}>
+                                        Add liquidity
+                                    </Button>
+
                                 </TabPanel>
 
                                 {/* For withdraw */}
