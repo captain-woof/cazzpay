@@ -119,6 +119,15 @@ describe("CazzPay should function correctly", async () => {
         assert.equal(allPairs[1], czpAndWethPairAddrExpected, "Incorrect pair address returned!");
     });
 
+    it("CazzPay should correctly return pairs on querying if all pairs were directly created on providing liquidity", async () => {
+        const czpLiquidityToProvide = "100";
+        const tstLiquidityToProvide = "10";
+        await addLiquidityToCzpAndTst(czpLiquidityToProvide, tstLiquidityToProvide);
+
+        const allPairs = await cazzPayContract.getAllPairsWithCzpAndOtherToken();
+        assert.lengthOf(allPairs, 1, "Incorrect number of pairs returned!");
+    });
+
     it("CazzPay should handle CZP-OtherToken liquidity addition correctly", async () => {
         const czpLiquidityToProvide = "100";
         const tstLiquidityToProvide = "10";
