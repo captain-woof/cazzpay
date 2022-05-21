@@ -20,7 +20,7 @@ export default function PayPage({ email, id, name, pairs }: IPayPage) {
     const { isConnected, isConnecting, showConnectDialog, disconnect } = useWalletConnection();
 
     // For paying with crypto
-    const { setPairSelectedForPayment, pairSelectedForPayment, tokenSelectedForPaymentPriceAtomic, numOfTokensToPayWith, setNumOfTokensToPayWith, fiatToBePaid, setFiatToBePaid, setWhatChanged, maxSlippage, setMaxSlippage, handlePayment, paymentInProgress, makeAnotherPayment, paymentDone } = usePayWithCrypto();
+    const { setPairSelectedForPayment, pairSelectedForPayment, tokenSelectedForPaymentPriceAtomic, numOfTokensToPayWith, setNumOfTokensToPayWith, fiatToBePaid, setFiatToBePaid, setWhatChanged, maxSlippage, setMaxSlippage, handlePayment, paymentInProgress, makeAnotherPayment, paymentDone, transactionHash } = usePayWithCrypto();
 
     return (
         <Container adjustForAppBar fullViewportHeight forReading display="flex" justifyContent="center" alignItems="center">
@@ -48,8 +48,7 @@ export default function PayPage({ email, id, name, pairs }: IPayPage) {
                     /* Payment form */
                     <form style={{ width: "100%" }} onSubmit={async (e) => {
                         e.preventDefault();
-                        // TODO
-                        await handlePayment();
+                        await handlePayment(id);
                     }}>
 
                         {/* Token to pay with */}
@@ -114,7 +113,7 @@ export default function PayPage({ email, id, name, pairs }: IPayPage) {
                         </Heading>
 
                         <Text textAlign="center" marginTop={2} fontWeight={500}>
-                            Transaction ID: 0xasas155515154878121548
+                            Transfer transaction hash: {transactionHash}
                         </Text>
 
                         <Button marginTop={8} colorScheme="blue" display="flex" marginLeft="auto" disabled={!(isConnected)} marginX="auto" onClick={makeAnotherPayment}>

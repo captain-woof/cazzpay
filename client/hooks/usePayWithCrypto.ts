@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import useWalletConnection from "./useWalletConnection";
 import BN from "bignumber.js";
 import { useToast } from "@chakra-ui/react";
+import { useCazzPay } from "./useCazzPay";
 
 interface Pair {
     pairAddr: string;
@@ -42,26 +43,38 @@ export const usePayWithCrypto = () => {
     // To track if payment is done
     const [paymentDone, setPaymentDone] = useState<boolean>(false);
 
+    // For CazzPay functions
+    const { getPriceOfTokenWithSymbol, buyWithCryptoToken, cazzPayContractConnected } = useCazzPay();
+
+    // Store transaction hash
+    const [transactionHash, setTransactionHash] = useState<string>("");
+
     // For token price update
     const [priceUpdateTimer, setPriceUpdateTimer] = useState<NodeJS.Timer>();
     useEffect(() => {
-        if (isConnected && !!pairSelectedForPayment) {
+        (async () => {
+            if (isConnected && !!pairSelectedForPayment) {
 
-            // Clear previous timer
-            !!priceUpdateTimer && clearInterval(priceUpdateTimer);
+                // Clear previous timer
+                !!priceUpdateTimer && clearInterval(priceUpdateTimer);
 
-            // TODO: Update price now
-            setTokenSelectedForPaymentPriceAtomic("10000000000000000000");
+                // Update price now
+                setTokenSelectedForPaymentPriceAtomic(
+                    (await getPriceOfTokenWithSymbol(pairSelectedForPayment.otherTokenSymbol))?.toString() || "0"
+                );
 
-            // Set timer to keep updating price
-            const newPriceUpdateTimer = setInterval(() => {
-                // TODO: FETCH TOKEN PRICE
-                setTokenSelectedForPaymentPriceAtomic("12000000000000000000");
-            }, 10 * 1000);
-            setPriceUpdateTimer(newPriceUpdateTimer);
+                // Set timer to keep updating price
+                /*const newPriceUpdateTimer = setInterval(async () => {
+                    // FETCH TOKEN PRICE
+                    setTokenSelectedForPaymentPriceAtomic(
+                        (await getPriceOfTokenWithSymbol(pairSelectedForPayment.otherTokenSymbol))?.toString() || "0"
+                    );
+                }, 10 * 1000);
+                setPriceUpdateTimer(newPriceUpdateTimer);
 
-            return () => { clearInterval(newPriceUpdateTimer); }
-        }
+                return () => { clearInterval(newPriceUpdateTimer); }*/
+            }
+        })()
     }, [pairSelectedForPayment, isConnected])
 
     // For fiat amt calculation
@@ -87,30 +100,23 @@ export const usePayWithCrypto = () => {
     }, [fiatToBePaid, tokenSelectedForPaymentPriceAtomic, whatChanged]);
 
     // Function to handle payment
-    const handlePayment = useCallback(async () => {
-        try {
+    const handlePayment = useCallback(async (sellerId: string) => {
+        if (!!pairSelectedForPayment) {
             setPaymentInProgress(true);
 
-            // TODO: PAYMENT
+            const details = await buyWithCryptoToken(
+                sellerId,
+                pairSelectedForPayment.otherTokenAddr as string,
+                numOfTokensToPayWith,
+                maxSlippage,
+                fiatToBePaid
+            );
+            setTransactionHash(details?.transactionHash || "");
 
-
-            toast({
-                status: "success",
-                position: "bottom",
-                title: "Payment successful!"
-            });
             setPaymentDone(true);
-        } catch (e: any) {
-            toast({
-                status: "success",
-                position: "bottom",
-                title: "Payment failed!",
-                description: e?.message || "Please try again!"
-            });
-        } finally {
             setPaymentInProgress(false);
         }
-    }, []);
+    }, [pairSelectedForPayment, numOfTokensToPayWith, maxSlippage, fiatToBePaid, cazzPayContractConnected]);
 
     const makeAnotherPayment = useCallback(() => {
         setNumOfTokensToPayWith("0");
@@ -135,6 +141,7 @@ export const usePayWithCrypto = () => {
         handlePayment,
         paymentInProgress,
         paymentDone,
-        makeAnotherPayment
+        makeAnotherPayment,
+        transactionHash
     }
 }

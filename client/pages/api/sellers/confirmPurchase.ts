@@ -3,24 +3,18 @@ import { setPurchaseConfirmation } from "../../../lib/ethers";
 
 
 // /api/confirmPurchase?cazzPayTransactionId=12
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const query = req.query;
     if (!("cazzPayTransactionId" in query)) {
-        res.statusCode = 400;
-        res.statusMessage = "Query must contain `cazzPayTransactionId`!";
-        res.end();
+        res.status(400).send("Query must contain `cazzPayTransactionId`!");
         return;
     }
 
     try {
         await setPurchaseConfirmation(query.cazzPayTransactionId as string);
-        res.statusCode = 200;
-        res.statusMessage = "Transaction confirmed!";
+        res.status(200).send("Transaction confirmed!");
     } catch (e: any) {
-        res.statusCode = 500;
-        res.statusMessage = e?.message || "Request could not be processed!";
-    } finally {
-        res.end();
+        res.status(500).send(e?.message || "Request could not be processed!");
     }
 }

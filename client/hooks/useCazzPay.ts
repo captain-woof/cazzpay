@@ -1,5 +1,5 @@
-import { BigNumber, Contract, ethers } from "ethers";
-import { useCallback, useMemo } from "react";
+import { BigNumber, ethers } from "ethers";
+import { useCallback, useEffect, useState } from "react";
 import useWalletConnection from "./useWalletConnection";
 import CazzPayArtifact from "../contracts/CazzPay.json";
 import CazzPayTokenArtifact from "../contracts/CazzPayToken.json";
@@ -10,8 +10,9 @@ import { UniswapPair, UniswapV2PairContract } from "../types/pair";
 import UniswapPairArtifact from "@uniswap/v2-core/build/UniswapV2Pair.json";
 import ERC20Artifact from "@uniswap/v2-core/build/ERC20.json";
 import BN from "bignumber.js";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { useToast } from "@chakra-ui/react";
+import { MockableContract } from "redstone-evm-connector/lib/utils/v2/impl/builder/MockableEthersContractWrapperBuilder";
 
 /////////////////////////////
 // CONSTANT FUNCS
@@ -23,14 +24,18 @@ const getDeadline = () => {
 const getValIncreased = (val: string | number, percIncrease: string | number) => (
     (new BN(val)).plus(
         new BN(val).multipliedBy(percIncrease).div(100)
-    ).toFixed(5)
+    ).toString()
 );
 
 const getValDecreased = (val: string | number, percDecrease: string | number) => (
     (new BN(val)).minus(
         new BN(val).multipliedBy(percDecrease).div(100)
-    ).toFixed(5)
+    ).toString()
 );
+
+const sleep = (sleepDurationInSecs: number) => (new Promise((resolve) => {
+    setTimeout(resolve, sleepDurationInSecs * 1000);
+}));
 
 
 /////////////////////////////
@@ -45,42 +50,48 @@ export const useCazzPay = () => {
     // VALUES
     ///////////////////////////
 
-    const cazzPayContract = useMemo(() => (
-        !!providerWrapped
-            ? new ethers.Contract(process.env.NEXT_PUBLIC_CAZZPAY_CONTRACT_ADDR as string, CazzPayArtifact.abi, providerWrapped)
-            : null
-    ), [providerWrapped]) as (CazzPay | null);
+    const [cazzPayContract, setCazzPayContract] = useState<CazzPay | null>(null);
+    const [cazzPayContractConnected, setCazzPayContractConnected] = useState<CazzPay | null>(null);
+    const [cazzPayContractRedstoneWrapped, setCazzPayContractRedstoneWrapped] = useState<MockableContract<CazzPay> | null>(null);
+    const [cazzPayTokenContract, setCazzPayTokenContract] = useState<CazzPayToken | null>(null);
+    const [cazzPayTokenContractConnected, setCazzPayTokenContractConnected] = useState<CazzPayToken | null>(null);
 
-    const cazzPayContractConnected = useMemo(() => (
-        (!!cazzPayContract && !!signer)
-            ? cazzPayContract.connect(signer)
-            : null
-    ), [cazzPayContract, signer]);
+    ///////////////////////////
+    // EFFECTS
+    ///////////////////////////
 
-    const cazzPayContractRedstoneWrapped = useMemo(() => (
-        !!cazzPayContract
-            ? WrapperBuilder
-                .mockLite(cazzPayContract)
+    useEffect(() => {
+        if (!!providerWrapped && !!signer) {
+            // Make new instances of CazzPayContract
+            const newCazzPayContract = new ethers.Contract(process.env.NEXT_PUBLIC_CAZZPAY_CONTRACT_ADDR as string, CazzPayArtifact.abi, providerWrapped) as CazzPay;
+            const newCazzPayContractConnected = newCazzPayContract.connect(signer);
+            const newCazzPayContractRedstoneWrapped = WrapperBuilder
+                .mockLite(newCazzPayContractConnected)
                 .using({
                     ETH: 2000,
                     CZP: 1,
                     TST: 10,
                     WETH: 2000
-                })
-            : null
-    ), [cazzPayContract]);
+                });
 
-    const cazzPayTokenContract = useMemo(() => (
-        !!providerWrapped
-            ? new ethers.Contract(process.env.NEXT_PUBLIC_CZP_CONTRACT_ADDR as string, CazzPayTokenArtifact.abi, providerWrapped)
-            : null
-    ), [providerWrapped]) as (CazzPayToken | null);
+            // Make new instances of CZP contract
+            const newCazzPayTokenContract = new ethers.Contract(process.env.NEXT_PUBLIC_CZP_CONTRACT_ADDR as string, CazzPayTokenArtifact.abi, providerWrapped) as CazzPayToken;
+            const newCazzPayTokenContractConnected = newCazzPayTokenContract.connect(signer);
 
-    const cazzPayTokenContractConnected = useMemo(() => (
-        (!!cazzPayTokenContract && !!signer)
-            ? cazzPayTokenContract.connect(signer)
-            : null
-    ), [cazzPayTokenContract, signer]);
+            // Set new contracts
+            setCazzPayContract(newCazzPayContract);
+            setCazzPayContractConnected(newCazzPayContractConnected);
+            setCazzPayContractRedstoneWrapped(newCazzPayContractRedstoneWrapped);
+            setCazzPayTokenContract(newCazzPayTokenContract);
+            setCazzPayTokenContractConnected(newCazzPayTokenContractConnected);
+        } else {
+            setCazzPayContract(null);
+            setCazzPayContractConnected(null);
+            setCazzPayContractRedstoneWrapped(null);
+            setCazzPayTokenContract(null);
+            setCazzPayTokenContractConnected(null);
+        }
+    }, [providerWrapped, signer]);
 
     ///////////////////////////
     // FUNCTIONS
@@ -528,22 +539,28 @@ export const useCazzPay = () => {
             try {
                 const otherTokenContract = new ethers.Contract(otherTokenAddress, ERC20Artifact.abi, signer) as ERC20;
                 const parsedFiatAmt = ethers.utils.parseEther(fiatAmtToPay);
-                const parsedOtherTokenAmt = ethers.utils.parseEther(otherTokenAmount);
-                const otherTokenAmountMax = getValIncreased(parsedOtherTokenAmt.toNumber(), otherTokenSlippage);
+                const otherTokenAmountMax = getValIncreased(otherTokenAmount, otherTokenSlippage);
+                const otherTokenAmountMaxParsed = ethers.utils.parseUnits(otherTokenAmountMax, await otherTokenContract.decimals());
 
                 // Approve token transfer
-                await otherTokenContract.connect(signer).approve(cazzPayContractConnected.address, otherTokenAmountMax);
+                const approveTxn = await otherTokenContract.connect(signer).approve(cazzPayContractConnected.address, otherTokenAmountMaxParsed);
+                await approveTxn.wait();
+                toast({
+                    status: "info",
+                    title: "Approved tokens",
+                    position: "bottom"
+                });
 
                 // Perform transaction
                 const tx = await cazzPayContractConnected
                     .buyWithCryptoToken(
                         recipientAccountIdToPay,
                         otherTokenAddress,
-                        otherTokenAmountMax,
+                        otherTokenAmountMaxParsed,
                         parsedFiatAmt,
                         getDeadline()
                     );
-                const { events } = await tx.wait();
+                const { events, transactionHash } = await tx.wait();
                 const buyEvent = events?.find(
                     ({ event }) => event === "BoughtWithCrypto"
                 ) as BoughtWithCryptoEvent;
@@ -557,14 +574,33 @@ export const useCazzPay = () => {
                     fiatAmountToPayToSeller,
                 } = buyEvent?.args;
 
-                // Send verification request to backend
-                const res = await axios.get("/api/sellers/confirmPurchase", {
-                    params: {
-                        cazzPayTransactionId
-                    }
-                });
+                // Keep sending verification request to backend until it succeeds
+                const maxTries = 3;
+                let res: AxiosResponse<any, any> | null = null;
 
-                if (res.status === 200) {
+                for (let currTry = 0; currTry < maxTries; currTry++) {
+                    toast({
+                        status: "loading",
+                        title: currTry === 0 ? "Verifying transaction..." : "Re-attempting verification...",
+                        position: "bottom"
+                    });
+
+                    await sleep((currTry + 1) * 5);
+
+                    try {
+                        res = await axios.get("/api/sellers/confirmPurchase", {
+                            params: {
+                                cazzPayTransactionId: cazzPayTransactionId.toString()
+                            }
+                        });
+                    } catch { }
+
+                    if (res?.status === 200) {
+                        break;
+                    }
+                }
+
+                if (res?.status === 200) {
                     toast({
                         status: "success",
                         title: "Transfer confirmed",
@@ -579,9 +615,10 @@ export const useCazzPay = () => {
                         tokenUsedForPurchaseContractAddr,
                         fiatAmountPaid,
                         fiatAmountToPayToSeller,
+                        transactionHash
                     };
                 } else {
-                    throw Error(res.data);
+                    throw Error(res?.data);
                 }
             } catch (e: any) {
                 toast({
