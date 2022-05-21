@@ -10,6 +10,7 @@ import { providers as providersEthers } from "ethers";
 
 import "../styles/global.css";
 import "../styles/react-paginate.css";
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 
 /**
  * @summary Used by Web3-React's provider to initialise its provider
@@ -26,16 +27,20 @@ function CazzPayApp({ Component, pageProps }: AppProps) {
     <ReduxProvider store={store}>
       <Web3ReactProvider getLibrary={getLibrary}>
         <ChakraProvider theme={theme}>
+          <PayPalScriptProvider options={{
+            "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID as string,
+          }}>
 
-          {/* AppBar */}
-          <AppBar />
+            {/* AppBar */}
+            <AppBar />
 
-          {/* Component to display */}
-          <Component {...pageProps} />
+            {/* Component to display */}
+            <Component {...pageProps} />
 
-          {/* Wallet connection dialog */}
-          <ConnectWalletDialog />
+            {/* Wallet connection dialog */}
+            <ConnectWalletDialog />
 
+          </PayPalScriptProvider>
         </ChakraProvider >
       </Web3ReactProvider>
     </ReduxProvider>

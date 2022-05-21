@@ -71,7 +71,7 @@ export default function PairDialog({ pairDialogVisible, pairSelected, setPairSel
 
                                 {/* Liquidity provided / Reserve */}
                                 <Text marginTop={2}>
-                                    {ethers.utils.formatUnits(pairInfo?.liquidityOtherTokenAtomic || "0", pairSelected?.otherTokenDigits)} / {ethers.utils.formatUnits(pairInfo?.reserveOtherTokenAtomic || "0", pairSelected?.otherTokenDigits)} ({(new BN(pairInfo?.liquidityOtherTokenAtomic || "0").div(pairInfo?.reserveOtherTokenAtomic || "1").multipliedBy(100).toFixed(2))}%)
+                                    {ethers.utils.formatUnits(pairInfo?.liquidityOtherTokenAtomic || "0", pairSelected?.otherTokenDecimals)} / {ethers.utils.formatUnits(pairInfo?.reserveOtherTokenAtomic || "0", pairSelected?.otherTokenDecimals)} ({(new BN(pairInfo?.liquidityOtherTokenAtomic || "0").div(pairInfo?.reserveOtherTokenAtomic || "1").multipliedBy(100).toFixed(2))}%)
                                 </Text>
                                 <Text fontSize="sm" fontWeight={500} color="gray.500">
                                     (Your share / Reserve)

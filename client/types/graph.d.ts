@@ -6,9 +6,11 @@ export interface Seller {
   email?: string;
   transactionsReceived?: Array<Transaction>;
 }
+
 export interface Transaction {
   id: string;
   payerWalletAddr?: string;
+  recipientSeller?: Seller;
   tokenUsedForPurchaseContractAddr?: string;
   tokenAmtUsedForPurchased?: BigNumber;
   fiatAmountPaid?: BigNumber;

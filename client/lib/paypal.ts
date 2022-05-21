@@ -1,4 +1,4 @@
-const CLIENT_ID: string = process.env.PAYPAL_CLIENT_ID as string;
+const CLIENT_ID: string = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID as string;
 const CLIENT_SECRET: string = process.env.PAYPAL_CLIENT_SECRET as string;
 const base = "https://api-m.sandbox.paypal.com";
 
@@ -157,7 +157,7 @@ export async function getCustomerData(accessToken: string) {
       },
     });
     const data = await response.json();
-    const customerData: PaypalProfileProps = {
+    const customerData: PaypalProfile = {
       name: data.name,
       paypalId: data.payer_id,
       email: data.emails[0].value,

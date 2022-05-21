@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { capturePayment } from "../../../lib/paypal_api";
+import { capturePayment } from "../../../lib/paypal";
 
 export default async function CaptureOrderRequest(
   req: NextApiRequest,

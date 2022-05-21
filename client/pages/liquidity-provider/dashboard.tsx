@@ -14,12 +14,14 @@ export const getStaticProps = async () => {
         pairAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
         otherTokenAddr: "",
         otherTokenName: "Ether",
-        otherTokenSymbol: "ETH"
+        otherTokenSymbol: "ETH",
+        otherTokenDecimals: 18
     }, {
         pairAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
         otherTokenAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
         otherTokenName: "TestCoin",
-        otherTokenSymbol: "TST"
+        otherTokenSymbol: "TST",
+        otherTokenDecimals: 18
     }];
 
     return {

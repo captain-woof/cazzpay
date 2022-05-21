@@ -1,7 +1,6 @@
 import axios from "axios";
 import { Seller, Transaction } from "../types/graph";
-const graphEndpoint: string = process.env
-  .NEXT_PUBLIC_GRAPH_API_ENDPOINT as string;
+const graphEndpoint: string = process.env.NEXT_PUBLIC_GRAPH_API_ENDPOINT as string;
 
 /** Get Seller Details
  * @params sellerId for a particular seller
@@ -94,4 +93,32 @@ export const listOfSellers = async (): Promise<Array<Seller>> => {
   });
   const sellers: Array<Seller> = response.data.data.sellers;
   return sellers;
+};
+
+/** Fetch all transactions of a particular seller
+ * @param cazzPayTransactionId ID for a particular transaction
+ * @return Transaction details of provided ID
+ */
+export const getTransactionById = async (cazzPayTransactionId: string) => {
+  const response = await axios.post(graphEndpoint, {
+    query: `
+      purchaseTransaction(id: ${cazzPayTransactionId}) {
+        id
+        payerWalletAddr
+        recipientSeller {
+          id,
+          email,
+          name
+        }
+        tokenUsedForPurchaseContractAddr
+        tokenAmtUsedForPurchased
+        fiatAmountPaid
+        fiatAmountToPayToSeller
+        confirmed
+        timestampOfConfirmation
+      }
+    }`,
+  });
+  const transaction: Transaction = response.data.data.seller.purchaseTransaction;
+  return transaction;
 };

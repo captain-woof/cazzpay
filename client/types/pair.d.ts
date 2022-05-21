@@ -1,9 +1,11 @@
+import { ERC20 } from "../typechain";
+
 export interface UniswapPair {
     pairAddr: string;
     otherTokenAddr: string;
     otherTokenName: string;
     otherTokenSymbol: string;
-    otherTokenDigits: number;
+    otherTokenDecimals: number;
 }
 
 export interface UniswapPairInfo {
@@ -12,4 +14,9 @@ export interface UniswapPairInfo {
     liquidityAtomic: string;
     liquidityOtherTokenAtomic: string;
     liquidityCzp: string;
+}
+
+export interface UniswapV2PairContract extends ERC20 {
+    token0: () => Promise<string>;
+    token1: () => Promise<string>;
 }

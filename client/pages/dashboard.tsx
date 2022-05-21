@@ -5,7 +5,7 @@ import { useState } from "react";
 import {
   generateAccessTokenForCustomer,
   getCustomerData,
-} from "../lib/paypal_api";
+} from "../lib/paypal";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const query: ParsedUrlQuery = context.query;
@@ -19,7 +19,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
   const authCode: string = query.code as string;
   const token: PayPalToken = await generateAccessTokenForCustomer(authCode);
-  const userData: PaypalProfileProps = await getCustomerData(token.accessToken);
+  const userData: PaypalProfile = await getCustomerData(token.accessToken);
 
   return {
     props: {
@@ -28,7 +28,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 };
 
-const Dashboard = ({ userData }: DashBoardProps) => {
+const Dashboard = ({ userData }: any) => {
   const [amount, setAmount] = useState<number>(1);
 
   return (
