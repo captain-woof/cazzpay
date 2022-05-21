@@ -226,6 +226,13 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             uint256 liquidityTokensMinted
         )
     {
+        // Check if pair exist. If not, the proceeding code would add it, so add it now to our list
+        address pairAddr = factoryContract.getPair(
+            address(czpContract),
+            _otherTokenContractAddr
+        );
+        bool isNewPair = pairAddr == address(0);
+
         // Transfer tokens to this contract
         czpContract.transferFrom(msg.sender, address(this), _czpAmtToDeposit);
         IERC20(_otherTokenContractAddr).transferFrom(
@@ -271,6 +278,16 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             );
         }
 
+        // Add pair to list if this is aa newly created pair
+        if (isNewPair) {
+            _allPairsWithCzpAndOtherToken.push(
+                factoryContract.getPair(
+                    address(czpContract),
+                    _otherTokenContractAddr
+                )
+            );
+        }
+
         // Fire event
         emit AddedLiquidityToCzpAndOtherTokenPair(
             _otherTokenContractAddr,
@@ -309,6 +326,13 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             uint256 liquidityTokensMinted
         )
     {
+        // Check if pair exist. If not, the proceeding code would add it, so add it now to our list
+        address pairAddr = factoryContract.getPair(
+            address(czpContract),
+            address(wethContract)
+        );
+        bool isNewPair = pairAddr == address(0);
+
         // Transfer CZP to this contract
         czpContract.transferFrom(msg.sender, address(this), _czpAmtToDeposit);
 
@@ -330,6 +354,16 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         if (czpAmtAdded < _czpAmtToDeposit) {
             czpContract.approve(address(routerContract), 0);
             czpContract.transfer(msg.sender, _czpAmtToDeposit - czpAmtAdded);
+        }
+
+        // Add pair to list if this is aa newly created pair
+        if (isNewPair) {
+            _allPairsWithCzpAndOtherToken.push(
+                factoryContract.getPair(
+                    address(czpContract),
+                    address(wethContract)
+                )
+            );
         }
 
         // Fire event
