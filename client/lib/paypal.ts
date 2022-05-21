@@ -2,8 +2,11 @@ const CLIENT_ID: string = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID as string;
 const CLIENT_SECRET: string = process.env.PAYPAL_CLIENT_SECRET as string;
 const base = "https://api-m.sandbox.paypal.com";
 
-/** CreateOrder,CaptureOrder & RefundOrder for payment  */
-//library function for creating an order
+// CreateOrder,CaptureOrder & RefundOrder for payment  */
+
+/**library function for creating an order
+ * @params Takes an amount as a parameter
+ */
 export async function createOrder(amountPrice: string): Promise<string> {
   try {
     const accessToken: string = await generateAccessToken();
@@ -33,7 +36,9 @@ export async function createOrder(amountPrice: string): Promise<string> {
     return error.message;
   }
 }
-//library function to capture the payment of the order based on orderId
+/**library function to capture the payment of the order based on orderId
+ * @params Takes the order id as the parameter to capture that order
+ */
 export async function capturePayment(orderId: string) {
   try {
     const access_token: string = await generateAccessToken();
@@ -68,9 +73,9 @@ export async function capturePayment(orderId: string) {
   }
 }
 
-//incase of any error happens while minting the token or the token could not generated
-//we have to refund the payment
-// Takes the captureId which will be termed as a paymentId as a parameter
+/**incase of any error happens while minting the token or the token could not generated
+we have to refund the payment
+ @params Takes the captureId which will be termed as a paymentId as a parameter*/
 export async function refundPayment(paymentId: string) {
   try {
     const access_token: string = await generateAccessToken();
@@ -88,8 +93,8 @@ export async function refundPayment(paymentId: string) {
   }
 }
 
-//helper function for generating access token via paypal client id and secret
-//returns the access_token via paypal merchant client id and client secret
+/**helper function for generating access token via paypal client id and secret
+returns the access_token via paypal merchant client id and client secret*/
 export async function generateAccessToken(): Promise<string> {
   try {
     const auth: string = Buffer.from(CLIENT_ID + ":" + CLIENT_SECRET).toString(
@@ -110,12 +115,12 @@ export async function generateAccessToken(): Promise<string> {
 }
 /** Till here is for order payment */
 
-/** Here are the login utilites */
+/*Here are the login utilites */
 
-//generating access token for customer via authorization code
-//takes the authorization code which we will get from the redirect url(callback url)
-//as parameter
-//returns the accessToken for the customer after login
+/**generating access token for customer via authorization code
+*takes the authorization code which we will get from the redirect url(callback url)
+*as parameter
+@returns the accessToken for the customer after login*/
 export async function generateAccessTokenForCustomer(
   authorization: string
 ): Promise<PayPalToken> {
@@ -142,9 +147,9 @@ export async function generateAccessTokenForCustomer(
   }
 }
 
-//fetching the customer data via access_token
-/** takes customer access_token as a parameter
- * and generate PaypalProfile object
+/**fetching the customer data via access_token
+ *@params takes customer access_token as a parameter
+ * @returns PaypalProfile object
  */
 export async function getCustomerData(accessToken: string) {
   try {
