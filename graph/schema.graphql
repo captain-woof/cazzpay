@@ -14,5 +14,5 @@ type PurchaseTransaction @entity {
   fiatAmountPaid: BigInt!
   fiatAmountToPayToSeller: BigInt!
   confirmed: Boolean!
-  timestampOfConfirmation: BigInt!
+  timestampOfConfirmation: BigInt
 }
