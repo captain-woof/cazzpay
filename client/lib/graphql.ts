@@ -62,7 +62,7 @@ export const getAllTransactionsUnderSeller = async (
   const response = await axios.post(graphEndpoint, {
     query: `{
       seller(id : "${sellerId}"){
-        transactonsReceived(first:${pageSize},skip:${pageNumber}){
+        transactionsReceived(first:${pageSize},skip:${pageNumber}){
           id
           payerWalletAddr
           tokenUsedForPurchaseContractAddr

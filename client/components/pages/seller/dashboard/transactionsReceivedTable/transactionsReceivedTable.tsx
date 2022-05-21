@@ -1,6 +1,5 @@
-import { Box, Button, ButtonGroup, Checkbox, IconButton, Spinner, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tooltip, Tr, useBreakpointValue, useTheme } from "@chakra-ui/react";
+import { Box, Button, Checkbox, IconButton, Spinner, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tooltip, Tr, useBreakpointValue, useTheme } from "@chakra-ui/react";
 import { ethers } from "ethers";
-import { usePaypal } from "../../../../../hooks/usePaypal";
 import { useTransactionsTable } from "./useTransactionsTable";
 import { FiCheck as CheckMarkIcon } from "react-icons/fi";
 import { MdNavigateNext as NextIcon, MdNavigateBefore as PreviousIcon } from "react-icons/md";
@@ -8,9 +7,6 @@ import { DateTime } from "luxon";
 import ReactPaginate from 'react-paginate';
 
 export default function TransactionsReceivedTable() {
-
-    // For paypal auth info
-    const { paypalState } = usePaypal();
 
     // For table
     const { setPage, setShouldAutoUpdate, shouldAutoUpdate, totalPages, transactionsReceived, page } = useTransactionsTable();
@@ -57,7 +53,7 @@ export default function TransactionsReceivedTable() {
 
                     {/* Table rows */}
                     <Tbody>
-                        {transactionsReceived.map(({ id, payerWalletAddr, tokenAmtUsedForPurchased, tokenUsedForPurchaseDigits, tokenUsedForPurchaseSymbol, fiatAmountToPayToSeller, confirmed, timestampOfConfirmation }) => (
+                        {transactionsReceived.map(({ id, payerWalletAddr, tokenAmtUsedForPurchased, tokenUsedForPurchaseDecimals: tokenUsedForPurchaseDigits, tokenUsedForPurchaseSymbol, fiatAmountToPayToSeller, confirmed, timestampOfConfirmation }) => (
                             <Tr key={id}>
                                 <Td>{id}</Td>
                                 <Tooltip label={payerWalletAddr}>
@@ -66,7 +62,7 @@ export default function TransactionsReceivedTable() {
                                 <Td isNumeric>{ethers.utils.formatUnits(tokenAmtUsedForPurchased, tokenUsedForPurchaseDigits).toString()} ({tokenUsedForPurchaseSymbol})</Td>
                                 <Td isNumeric>{ethers.utils.formatEther(fiatAmountToPayToSeller).toString()}</Td>
                                 <Td>{confirmed ? <CheckMarkIcon size={24} /> : <Spinner color='blue.400' />}</Td>
-                                <Td>{DateTime.fromSeconds(timestampOfConfirmation as number).toLocaleString(DateTime.DATETIME_MED)}</Td>
+                                <Td>{DateTime.fromSeconds(parseInt(timestampOfConfirmation.toString())).toLocaleString(DateTime.DATETIME_MED)}</Td>
                             </Tr>
                         ))}
                     </Tbody>

@@ -115,3 +115,21 @@ export const setPurchaseConfirmation = async (cazzPayTransactionId: string) => {
     }
   }
 }
+
+/**
+ * @param tokenContractAddr Address of the token contract
+ * @return name, symbol, decimals
+ */
+export const getTokenDetails = async (tokenContractAddr: string) => {
+  const tokenContract = new ethers.Contract(tokenContractAddr, ERC20Artifact.abi, cazzPayProvider) as ERC20;
+  const [name, symbol, decimals] = await Promise.all([
+    tokenContract.name(),
+    tokenContract.symbol(),
+    tokenContract.decimals()
+  ]);
+  return {
+    name,
+    symbol,
+    decimals
+  }
+}
