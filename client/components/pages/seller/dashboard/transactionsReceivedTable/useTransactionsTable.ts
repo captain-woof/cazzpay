@@ -94,14 +94,14 @@ export const useTransactionsTable = () => {
         setUpdateTimer(newUpdateTimer);
 
         return () => { clearInterval(newUpdateTimer as NodeJS.Timer); }
-    }, [page, shouldAutoUpdate]);
+    }, [page, shouldAutoUpdate, paypalState?.userInfo]);
 
     // Keep transactions table updated if page changes
     useEffect(() => {
         (async () => {
             await updateTableData(page);
         })();
-    }, [page]);
+    }, [page, paypalState?.userInfo]);
 
     // Return
     return {
