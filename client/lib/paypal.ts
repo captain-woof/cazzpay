@@ -194,12 +194,11 @@ export async function refreshAccessToken(
 }
 
 /** Sending money from the merchant account is complex we need to use payout rest api here
- *  we need to create payout batch
+ *  we need to create payout batch,
  * two parameters needed -
  * 1. how much amount to be paid
- * 2. Seller paypal id
- */
-export async function payoutSeller(
+ * 2. Seller paypal id*/
+export async function sendMoneyToSeller(
   amountToPay: string | number,
   sellerId: string
 ) {
