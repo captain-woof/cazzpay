@@ -131,7 +131,7 @@ export const setPurchaseConfirmation = async (cazzPayTransactionId: string) => {
       const sellerToPay = transaction.recipientSeller;
       const amtToPayToSeller = ethers.utils.formatUnits(
         transaction.fiatAmountToPayToSeller?.toString() as string,
-        16
+        18
       );
 
       // Pay seller with FIAT

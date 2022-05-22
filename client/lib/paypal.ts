@@ -225,9 +225,9 @@ export async function sendMoneyToSeller(
             recipient_type: "PAYPAL_ID",
             amount: {
               currency: "USD",
-              amount: amountToPay,
+              value: amountToPay,
             },
-            reciever: sellerId,
+            receiver: sellerId,
           },
         ],
       }),
