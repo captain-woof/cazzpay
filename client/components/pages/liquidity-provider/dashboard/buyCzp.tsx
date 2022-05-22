@@ -1,9 +1,10 @@
-import { Button, ButtonProps, FormControl, FormHelperText, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text, Tooltip } from "@chakra-ui/react";
+import { Box, Button, ButtonProps, FormControl, FormHelperText, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text, Tooltip, useToast } from "@chakra-ui/react";
 import { BsCoin as BuyCzpIcon } from "react-icons/bs";
-import { GiTwoCoins as CoinIcon } from "react-icons/gi";
 import { useLiquidityProvider } from "../../../../hooks/useLiquidityProvider";
 import useWalletConnection from "../../../../hooks/useWalletConnection";
 import { IoWallet as WalletIcon } from "react-icons/io5";
+import { PayPalButtons } from "@paypal/react-paypal-js";
+import axios from "axios";
 
 interface ISellerQRCode {
     buttonProps: ButtonProps;
@@ -12,10 +13,13 @@ interface ISellerQRCode {
 export default function BuyCzp({ buttonProps }: ISellerQRCode) {
 
     // For liquidity provider
-    const { handleBuyCzp, buyCzpDialogVisible, setBuyCzpDialogVisible, buyCzpProgress, czpBuyAmt, setCzpBuyAmt } = useLiquidityProvider();
+    const { buyCzpDialogVisible, setBuyCzpDialogVisible, czpBuyAmt, setCzpBuyAmt } = useLiquidityProvider();
 
     // For wallet connection
-    const { isConnecting, isConnected, showConnectDialog, disconnect } = useWalletConnection();
+    const { isConnecting, isConnected, showConnectDialog, disconnect, signerAddr } = useWalletConnection();
+
+    // For toast
+    const toast = useToast();
 
     return (
         <>
@@ -53,10 +57,55 @@ export default function BuyCzp({ buttonProps }: ISellerQRCode) {
 
                     {/* Interaction buttons */}
                     <ModalFooter flexDirection="column" alignItems="flex-end">
+
                         {/* Buy button */}
-                        <Button rightIcon={<CoinIcon size={24} />} variant="solid" colorScheme="blue" onClick={handleBuyCzp} isLoading={buyCzpProgress} loadingText="Buying" disabled={!(isConnected && !!czpBuyAmt)}>
-                            Buy
-                        </Button>
+                        <PayPalButtons style={{
+                            layout: "horizontal",
+                            color: "blue",
+                            shape: "pill",
+                            label: "pay"
+                        }} forceReRender={[czpBuyAmt, signerAddr]}
+                            createOrder={async () => {
+                                try {
+                                    const res = await fetch("/api/orders", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            Accept: "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                            price: czpBuyAmt,
+                                        }),
+                                    });
+                                    const data = await res.json();
+                                    return data.id;
+                                } catch (e) {
+                                    console.error(e);
+                                }
+                            }}
+                            onCancel={(data) => {
+                                console.error(data);
+                                toast({
+                                    position: "bottom",
+                                    status: "error",
+                                    title: JSON.stringify(data) || "Unexpected error! Please try again."
+                                });
+                            }}
+                            onApprove={async (data, actions) => {
+                                const resp = await axios.post(`/api/orders/${data.orderID}`, {
+                                    mintTo: signerAddr
+                                }, {
+                                    responseType: "json"
+                                });
+                                toast({
+                                    position: "bottom",
+                                    status: "success",
+                                    title: "Payment successful!"
+                                });
+                                console.log(resp.data);
+                            }}
+                        />
+
                         <Text fontSize="sm" marginTop={2} fontWeight={500} color="gray.500">
                             $CZP bought would be deposited to your wallet
                         </Text>

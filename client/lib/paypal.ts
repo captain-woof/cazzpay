@@ -1,3 +1,5 @@
+import { mintCzp } from "./ethers";
+
 const CLIENT_ID: string = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID as string;
 const CLIENT_SECRET: string = process.env.PAYPAL_CLIENT_SECRET as string;
 const base = "https://api-m.sandbox.paypal.com";
@@ -39,7 +41,7 @@ export async function createOrder(amountPrice: string): Promise<string> {
 /**library function to capture the payment of the order based on orderId
  * @params Takes the order id as the parameter to capture that order
  */
-export async function capturePayment(orderId: string) {
+export async function capturePayment(orderId: string, mintTo: string) {
   try {
     const access_token: string = await generateAccessToken();
     const url = `${base}/v2/checkout/orders/${orderId}/capture`;
@@ -52,24 +54,22 @@ export async function capturePayment(orderId: string) {
     });
 
     const data = await response.json();
-    console.log(data);
     const captureDetails = data.purchase_units[0].payments.captures[0];
     //this amount is for creating respected amount of CZP Token
-    const { amount } = captureDetails.amount;
+    const { value } = captureDetails.amount;
     //this captureId is for refunding the payment
     const captureId = captureDetails.id;
-    console.log(captureId);
-    return data;
-    /**
-     * Now here ethereum transaction will happen
-     * try{
-     *  //Etherum transactions
-     *
-     * }catch()
-     *
-     */
-  } catch (err) {
-    return err;
+    try {
+      await mintCzp(mintTo, value);
+      return data;
+    } catch (e: any) {
+      // If CZP transfer fails, refund FIAT back to buyer
+      await refundPayment(captureId);
+      throw Error(e);
+    }
+
+  } catch (err: any) {
+    throw Error(err);
   }
 }
 
@@ -81,6 +81,7 @@ export async function refundPayment(paymentId: string) {
     const access_token: string = await generateAccessToken();
     const url = `${base}/v2/payments/captures/${paymentId}/refund`;
     const response = await fetch(url, {
+      method: "post",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${access_token}`,

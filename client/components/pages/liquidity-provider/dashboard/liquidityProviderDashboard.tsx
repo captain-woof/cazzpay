@@ -43,7 +43,7 @@ export default function LiquidityProviderDashboardPage({ email, id, name, pairs 
                     id
                 });
             } else if (!paypalState.loggedIn) {
-                router.push("/login?as=seller");
+                router.push("/login?as=liquidity-provider");
             }
         })();
     }, [router]);
