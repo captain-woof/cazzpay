@@ -1,6 +1,6 @@
 /* SCROLLBAR */
 body {
-    scrollbar-color: #f5b349;
+    scrollbar-color: #4299E1;
 }
 
 ::-webkit-scrollbar {
@@ -9,7 +9,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background-color: #f5b349;
+    background-color: #4299E1;
 }
 
 ::-webkit-scrollbar-thumb {
