@@ -6,9 +6,9 @@ dataSources:
     name: CazzPay
     network: rinkeby
     source:
-      address: "0x9753bC5c6C2ed1F0E1299c1c978425AC8C3adcd0"
+      address: "0xDBbD3EF86b6F1a250f542F21362FeA46c28F037c"
       abi: CazzPay
-      startBlock: 10715114
+      startBlock: 10719301
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
