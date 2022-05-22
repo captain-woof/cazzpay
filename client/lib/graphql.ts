@@ -45,9 +45,14 @@ export const totalTransactionsUnderSeller = async (
       }
     }`,
   });
-  const transactions: Array<Transaction> =
-    response.data.data.seller.transactionsReceived;
-  return transactions.length;
+  const seller = response.data.data.seller;
+  let transactionsUnderSeller: Array<Transaction>;
+  if (!!seller) {
+    transactionsUnderSeller = seller.transactionsReceived;
+  } else {
+    transactionsUnderSeller = [];
+  }
+  return transactionsUnderSeller.length;
 };
 /** Fetch all transactions of a particular seller
  * @params sellerId for a particular seller
@@ -75,9 +80,15 @@ export const getAllTransactionsUnderSeller = async (
       }
     }`,
   });
-  const transactions: Array<Transaction> =
-    response.data.data.seller.transactionsReceived;
-  return transactions;
+
+  const seller = response.data.data.seller;
+  let transactionsUnderSeller: Array<Transaction>;
+  if (!!seller) {
+    transactionsUnderSeller = seller.transactionsReceived;
+  } else {
+    transactionsUnderSeller = [];
+  }
+  return transactionsUnderSeller;
 };
 
 /** Get the list of all sellers */
