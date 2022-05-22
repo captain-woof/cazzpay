@@ -55,7 +55,7 @@ export async function capturePayment(orderId: string) {
     console.log(data);
     const captureDetails = data.purchase_units[0].payments.captures[0];
     //this amount is for creating respected amount of CZP Token
-    const { amount } = captureDetails.amount;
+    const { value } = captureDetails.amount;
     //this captureId is for refunding the payment
     const captureId = captureDetails.id;
     console.log(captureId);
@@ -81,6 +81,7 @@ export async function refundPayment(paymentId: string) {
     const access_token: string = await generateAccessToken();
     const url = `${base}/v2/payments/captures/${paymentId}/refund`;
     const response = await fetch(url, {
+      method: "post",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${access_token}`,
@@ -224,9 +225,9 @@ export async function sendMoneyToSeller(
             recipient_type: "PAYPAL_ID",
             amount: {
               currency: "USD",
-              amount: amountToPay,
+              value: amountToPay,
             },
-            reciever: sellerId,
+            receiver: sellerId,
           },
         ],
       }),
