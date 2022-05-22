@@ -38,7 +38,6 @@ export default function BuyCzp({ buttonProps }: ISellerQRCode) {
                     <ModalHeader>Buy $CZP</ModalHeader>
                     <ModalCloseButton />
 
-
                     <ModalBody>
 
                         {/* Connect wallet button */}
@@ -64,7 +63,8 @@ export default function BuyCzp({ buttonProps }: ISellerQRCode) {
                             color: "blue",
                             shape: "pill",
                             label: "pay"
-                        }} forceReRender={[czpBuyAmt, signerAddr]}
+                        }} forceReRender={[czpBuyAmt, signerAddr, isConnected, setCzpBuyAmt, setBuyCzpDialogVisible]}
+                            disabled={!(isConnected && !!czpBuyAmt)}
                             createOrder={async () => {
                                 try {
                                     const res = await fetch("/api/orders", {
@@ -88,7 +88,7 @@ export default function BuyCzp({ buttonProps }: ISellerQRCode) {
                                 toast({
                                     position: "bottom",
                                     status: "error",
-                                    title: JSON.stringify(data) || "Unexpected error! Please try again."
+                                    title: "Could not send payment!"
                                 });
                             }}
                             onApprove={async (data, actions) => {
@@ -97,12 +97,16 @@ export default function BuyCzp({ buttonProps }: ISellerQRCode) {
                                 }, {
                                     responseType: "json"
                                 });
+
+                                setCzpBuyAmt("0");
+                                setBuyCzpDialogVisible(false);
+
                                 toast({
                                     position: "bottom",
                                     status: "success",
                                     title: "Payment successful!"
                                 });
-                                console.log(resp.data);
+                                
                             }}
                         />
 
