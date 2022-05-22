@@ -1,19 +1,16 @@
-import { Box, Button, ButtonGroup, Checkbox, IconButton, Spinner, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tooltip, Tr, useBreakpointValue, useTheme } from "@chakra-ui/react";
+import { Box, Button, Checkbox, IconButton, Spinner, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tooltip, Tr, useBreakpointValue, useTheme } from "@chakra-ui/react";
 import { ethers } from "ethers";
-import { usePaypal } from "../../../../../hooks/usePaypal";
 import { useTransactionsTable } from "./useTransactionsTable";
 import { FiCheck as CheckMarkIcon } from "react-icons/fi";
 import { MdNavigateNext as NextIcon, MdNavigateBefore as PreviousIcon } from "react-icons/md";
 import { DateTime } from "luxon";
 import ReactPaginate from 'react-paginate';
+import BN from "bignumber.js";
 
 export default function TransactionsReceivedTable() {
 
-    // For paypal auth info
-    const { paypalState } = usePaypal();
-
     // For table
-    const { setPage, setShouldAutoUpdate, shouldAutoUpdate, totalPages, transactionsReceived, page } = useTransactionsTable();
+    const { setPage, setShouldAutoUpdate, shouldAutoUpdate, totalPages, transactionsReceived, page, isTableBeingUpdated } = useTransactionsTable();
 
     // For theme
     const theme = useTheme();
@@ -27,7 +24,7 @@ export default function TransactionsReceivedTable() {
     return (
         <>
             <TableContainer marginTop={8}>
-                <Table variant='striped' colorScheme="blue">
+                <Table variant='striped' colorScheme="blue" position="relative">
 
                     {/* Table caption */}
                     <TableCaption placement="top" fontSize="2xl" textAlign="start" padding={0} marginBottom={4}>
@@ -57,16 +54,23 @@ export default function TransactionsReceivedTable() {
 
                     {/* Table rows */}
                     <Tbody>
-                        {transactionsReceived.map(({ id, payerWalletAddr, tokenAmtUsedForPurchased, tokenUsedForPurchaseDigits, tokenUsedForPurchaseSymbol, fiatAmountToPayToSeller, confirmed, timestampOfConfirmation }) => (
-                            <Tr key={id}>
+
+                        {isTableBeingUpdated &&
+                            <Spinner color="blue.400" position="absolute" size="xl" top="50%" left="50%" translateX="-50%" translateY="-50%" zIndex={10} thickness='4px' speed='0.65s' emptyColor='gray.200' />
+                        }
+
+                        {transactionsReceived.map(({ id, payerWalletAddr, tokenAmtUsedForPurchased, tokenUsedForPurchaseDecimals: tokenUsedForPurchaseDigits, tokenUsedForPurchaseSymbol, fiatAmountToPayToSeller, confirmed, timestampOfConfirmation }) => (
+                            <Tr key={id} opacity={isTableBeingUpdated ? 0.7 : 1}>
                                 <Td>{id}</Td>
                                 <Tooltip label={payerWalletAddr}>
                                     <Td>{`${payerWalletAddr.slice(0, 6)}...${payerWalletAddr.slice(payerWalletAddr.length - 4)}`}</Td>
                                 </Tooltip>
-                                <Td isNumeric>{ethers.utils.formatUnits(tokenAmtUsedForPurchased, tokenUsedForPurchaseDigits).toString()} ({tokenUsedForPurchaseSymbol})</Td>
+                                <Tooltip label={`${ethers.utils.formatUnits(tokenAmtUsedForPurchased, tokenUsedForPurchaseDigits)} (${tokenUsedForPurchaseSymbol})`}>
+                                    <Td isNumeric>{new BN(ethers.utils.formatUnits(tokenAmtUsedForPurchased, tokenUsedForPurchaseDigits)).toFixed(3)} ({tokenUsedForPurchaseSymbol})</Td>
+                                </Tooltip>
                                 <Td isNumeric>{ethers.utils.formatEther(fiatAmountToPayToSeller).toString()}</Td>
                                 <Td>{confirmed ? <CheckMarkIcon size={24} /> : <Spinner color='blue.400' />}</Td>
-                                <Td>{DateTime.fromSeconds(timestampOfConfirmation as number).toLocaleString(DateTime.DATETIME_MED)}</Td>
+                                <Td>{confirmed ? DateTime.fromSeconds(parseInt(timestampOfConfirmation.toString())).toLocaleString(DateTime.DATETIME_MED) : ""}</Td>
                             </Tr>
                         ))}
                     </Tbody>

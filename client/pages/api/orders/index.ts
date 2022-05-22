@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { createOrder } from "../../../lib/paypal_api";
+import { createOrder } from "../../../lib/paypal";
 
 export default async function CreateOrderRequest(
   req: NextApiRequest,

@@ -1,50 +1,16 @@
 import { useToast } from "@chakra-ui/react";
+import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
+import { usePaypal } from "../../../../../hooks/usePaypal";
+import { getAllTransactionsUnderSeller } from "../../../../../lib/graphql";
+import { TransactionExtended } from "../../../../../types/graph";
 
 const PAGE_SIZE = 7;
 
-// DUMMY DATA
-const dummyTransactions = new Array<number>(50)
-    .fill(0)
-    .map((_, index) => ({
-        id: index.toString(),
-        payerWalletAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
-        recipientSeller: {
-            email: "sohail@email.com",
-            name: "Sohail Saha",
-            id: "RANDOM_ID"
-        },
-        tokenUsedForPurchaseContractAddr: "",
-        tokenUsedForPurchaseDigits: 18,
-        tokenUsedForPurchaseSymbol: "ETH",
-        tokenUsedForPurchaseName: "Ethers",
-        tokenAmtUsedForPurchased: "50300000000000000000",
-        fiatAmountPaid: "20000000000000000000",
-        fiatAmountToPayToSeller: "19900000000000000000",
-        confirmed: true,
-        timestampOfConfirmation: (Date.now() / 1000) + (60 * index)
-    }))
-    .reverse();
-dummyTransactions.unshift({
-    id: dummyTransactions.length.toString(),
-    payerWalletAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
-    recipientSeller: {
-        email: "sohail@email.com",
-        name: "Sohail Saha",
-        id: "RANDOM_ID"
-    },
-    tokenUsedForPurchaseContractAddr: "",
-    tokenUsedForPurchaseDigits: 18,
-    tokenUsedForPurchaseSymbol: "ETH",
-    tokenUsedForPurchaseName: "Ethers",
-    tokenAmtUsedForPurchased: "50300000000000000000",
-    fiatAmountPaid: "20000000000000000000",
-    fiatAmountToPayToSeller: "19900000000000000000",
-    confirmed: false,
-    timestampOfConfirmation: (Date.now() / 1000)
-});
-
 export const useTransactionsTable = () => {
+    // For paypal auth info
+    const { paypalState } = usePaypal();
+
     // For toast
     const toast = useToast();
 
@@ -56,13 +22,65 @@ export const useTransactionsTable = () => {
     const [totalPages, setTotalPages] = useState<number>(0);
 
     // To store transactions
-    const [transactionsReceived, setSransactionsReceived] = useState<typeof dummyTransactions>([]);
+    const [transactionsReceived, setSransactionsReceived] = useState<Array<TransactionExtended>>([]);
+
+    // To store if table is being updated
+    const [isTableBeingUpdated, setIsTableBeingUpdated] = useState<boolean>(false);
 
     // Function to update table rows
     const updateTableData = useCallback(async (pageNum: number) => {
-        setTotalPages(Math.ceil(dummyTransactions.length / PAGE_SIZE));
-        setSransactionsReceived(dummyTransactions.slice(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE));
-    }, []);
+        setIsTableBeingUpdated(true);
+        
+        const totalTransactionsNumResp = await axios.get("/api/sellers/getTotalTransactionsNum", {
+            params: {
+                id: paypalState?.userInfo?.id
+            }
+        });
+
+        // Set total num of pages
+        const totalTransactionsNum = totalTransactionsNumResp.data as number;
+        setTotalPages(Math.ceil(totalTransactionsNum / PAGE_SIZE));
+
+        // Set transactions data
+        const allTransactions = await getAllTransactionsUnderSeller(paypalState?.userInfo?.id as string, pageNum, PAGE_SIZE);
+        const allTransactionsExtended: Array<TransactionExtended> = [];
+
+        const tokenAddrToDetailsMap: {
+            [tokenAddr: string]: {
+                decimals: number,
+                symbol: string,
+                name: string
+            }
+        } = {};
+
+        for await (let transaction of allTransactions) {
+
+            const { tokenUsedForPurchaseContractAddr } = transaction;
+
+            if (!(tokenUsedForPurchaseContractAddr in tokenAddrToDetailsMap)) {
+                const tokenDetailsResp = await axios.get("/api/sellers/getTokenInfo", {
+                    params: {
+                        tokenContractAddr: tokenUsedForPurchaseContractAddr
+                    },
+                    responseType: "json"
+                });
+                const { name, symbol, decimals } = tokenDetailsResp.data;
+                tokenAddrToDetailsMap[tokenUsedForPurchaseContractAddr] = {
+                    decimals, name, symbol
+                }
+            }
+
+            allTransactionsExtended.push({
+                ...transaction,
+                tokenUsedForPurchaseDecimals: tokenAddrToDetailsMap[tokenUsedForPurchaseContractAddr].decimals,
+                tokenUsedForPurchaseSymbol: tokenAddrToDetailsMap[tokenUsedForPurchaseContractAddr].symbol,
+                tokenUsedForPurchaseName: tokenAddrToDetailsMap[tokenUsedForPurchaseContractAddr].name,
+            });
+        }
+
+        setSransactionsReceived(allTransactionsExtended);
+        setIsTableBeingUpdated(false);
+    }, [paypalState?.userInfo]);
 
     // Update data periodically if needed
     const [updateTimer, setUpdateTimer] = useState<NodeJS.Timer | null>(null);
@@ -82,14 +100,14 @@ export const useTransactionsTable = () => {
         setUpdateTimer(newUpdateTimer);
 
         return () => { clearInterval(newUpdateTimer as NodeJS.Timer); }
-    }, [page, shouldAutoUpdate]);
+    }, [page, shouldAutoUpdate, paypalState?.userInfo]);
 
     // Keep transactions table updated if page changes
     useEffect(() => {
         (async () => {
             await updateTableData(page);
         })();
-    }, [page]);
+    }, [page, paypalState?.userInfo]);
 
     // Return
     return {
@@ -98,6 +116,7 @@ export const useTransactionsTable = () => {
         transactionsReceived,
         totalPages,
         setPage,
-        page
+        page,
+        isTableBeingUpdated
     }
 }

@@ -15,8 +15,10 @@ export default function LoginPage({ loginAs }: ILoginPage) {
     const { paypalState, setPaypalLoggedInState } = usePaypal();
 
     // Function to handle login
-    const handleLogin = useCallback(() => {
-        window?.alert("TODO: LOGIN");
+    const handleLogin = useCallback(async () => {
+        const origin = document?.location?.origin;
+
+        await router.push(`https://www.sandbox.paypal.com/connect?flowEntry=static&client_id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&scope=openid profile email&redirect_uri=http://redirectmeto.com/${origin}/${loginAs}/dashboard`);
     }, [setPaypalLoggedInState]);
 
     // Next router
@@ -25,7 +27,7 @@ export default function LoginPage({ loginAs }: ILoginPage) {
     // Handle navigation to dashboard
     const handleNavToDashboard = useCallback(async () => {
         await router.push(`${loginAs}/dashboard`);
-    }, [loginAs, router])
+    }, [loginAs, router]);
 
     return (
         <Container adjustForAppBar fullViewportHeight forReading display="flex" justifyContent="center" alignItems="center">

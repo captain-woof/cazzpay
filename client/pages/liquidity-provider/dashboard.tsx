@@ -1,40 +1,49 @@
-import { InferGetStaticPropsType } from "next";
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
+import { ParsedUrlQuery } from "querystring";
 import LiquidityProviderDashboardPage from "../../components/pages/liquidity-provider/dashboard";
-import { UniswapPair } from "../../types/pair";
+import { getAllPairsWithCzpAndOtherToken } from "../../lib/ethers";
+import { generateAccessTokenForCustomer, getCustomerData } from "../../lib/paypal";
 
-export const getStaticProps = async () => {
-
-    // TODO: FETCH LP PAYPAL INFO
-    const id = "RANDOM_ID"
-    const email = "sohail@email.com";
-    const name = "Sohail Saha";
-
-    // TODO: FETCH PAIR INFORMATION
-    const pairs: Array<UniswapPair> = [{
-        pairAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
-        otherTokenAddr: "",
-        otherTokenName: "Ether",
-        otherTokenSymbol: "ETH"
-    }, {
-        pairAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
-        otherTokenAddr: "0xC3c46F581A44989A02Eca7828467E369B90cb3fa",
-        otherTokenName: "TestCoin",
-        otherTokenSymbol: "TST"
-    }];
-
-    return {
-        props: {
-            id,
-            email,
-            name,
-            pairs
+const emptyProps = {
+    props: {
+        userData: {
+            name: "",
+            email: "",
+            paypalId: ""
         },
-        revalidate: 1
+        pairs: []
     }
 }
 
-export default function LiquidityProviderDashboard({ email, id, name, pairs }: InferGetStaticPropsType<typeof getStaticProps>) {
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+    const query: ParsedUrlQuery = context.query;
+
+    if ("code" in query) {
+        try {
+            // Get Paypal user id
+            const authCode: string = query.code as string;
+            const token: PayPalToken = await generateAccessTokenForCustomer(authCode);
+            const userData: PaypalProfile = await getCustomerData(token.accessToken);
+
+            // Fetch all pairs to show
+            const pairs = await getAllPairsWithCzpAndOtherToken();
+
+            return {
+                props: {
+                    userData,
+                    pairs
+                },
+            };
+        } catch {
+            return emptyProps;
+        }
+    } else {
+        return emptyProps;
+    }
+};
+
+export default function LiquidityProviderDashboard({ userData, pairs }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     return (
-        <LiquidityProviderDashboardPage email={email} id={id} name={name} pairs={pairs} />
+        <LiquidityProviderDashboardPage email={userData?.email} id={userData?.paypalId} name={userData?.name} pairs={pairs || []} />
     )
 }
