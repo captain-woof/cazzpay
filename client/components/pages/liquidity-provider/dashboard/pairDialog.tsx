@@ -71,7 +71,7 @@ export default function PairDialog({ pairDialogVisible, pairSelected, setPairSel
                                 {/* Liquidity provided / Reserve */}
                                 <Text marginTop={2} fontSize="sm" textAlign="center">
                                     {(new BN(ethers.utils.formatUnits(pairInfo?.liquidityOtherTokenAtomic || "0", pairSelected?.otherTokenDecimals))).toFixed(3)} / {(new BN(ethers.utils.formatUnits(pairInfo?.reserveOtherTokenAtomic || "0", pairSelected?.otherTokenDecimals))).toFixed(3)}
-                                    <br/>
+                                    <br />
                                     ({(new BN(pairInfo?.liquidityOtherTokenAtomic || "0").div(pairInfo?.reserveOtherTokenAtomic || "1").multipliedBy(100).toFixed(2))}%)
                                 </Text>
                                 <Text fontSize="sm" fontWeight={500} color="gray.500">
@@ -90,7 +90,7 @@ export default function PairDialog({ pairDialogVisible, pairSelected, setPairSel
                                 {/* Liquidity provided / Reserve */}
                                 <Text marginTop={2} fontSize="sm" textAlign="center">
                                     {(new BN(ethers.utils.formatUnits(pairInfo?.liquidityCzp || "0", 18))).toFixed(3)} / {(new BN(ethers.utils.formatUnits(pairInfo?.reserveCzpAtomic || "0", 18))).toFixed(3)}
-                                    <br/>
+                                    <br />
                                     ({(new BN(pairInfo?.liquidityCzp || "0").div(pairInfo?.reserveCzpAtomic || "1").multipliedBy(100).toFixed(2))}%)
                                 </Text>
                                 <Text fontSize="sm" fontWeight={500} color="gray.500">
@@ -181,7 +181,7 @@ export default function PairDialog({ pairDialogVisible, pairSelected, setPairSel
                                             Liquidity to withdraw
                                         </FormLabel>
                                         <Input id="liquidity-to-withdraw" name="liquidity-to-withdraw" value={liquidityToWithdraw} onChange={(e) => { setLiquidityToWithdraw(e.target.value) }} colorScheme="blue" type="number" placeholder="XXX.XX" />
-                                        <FormHelperText>You have: {ethers.utils.formatUnits(pairInfo?.liquidityAtomic || "0", 18)}</FormHelperText>
+                                        <FormHelperText>You have: {new BN(ethers.utils.formatUnits(pairInfo?.liquidityAtomic || "0", 18)).toFixed(3)}</FormHelperText>
                                     </FormControl>
 
                                     {/* Min other token */}

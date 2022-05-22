@@ -235,37 +235,24 @@ export const useLiquidityProvider = () => {
     // Function to withdraw liquidity
     const handleWithdrawLiquidity = useCallback(async () => {
         if (!!pairSelected) {
-            try {
-                setLiquidityWithdrawProgress(true);
+            setLiquidityWithdrawProgress(true);
 
-                // WITHDRAW LIQUIDITY
-                await withdrawLiquidityForCzpAndOtherToken(
-                    pairSelected.otherTokenAddr,
-                    liquidityToWithdraw,
-                    minCzpToWithdraw,
-                    minOtherTokenToWithdraw
-                );
+            // WITHDRAW LIQUIDITY
+            await withdrawLiquidityForCzpAndOtherToken(
+                pairSelected.otherTokenAddr,
+                liquidityToWithdraw,
+                minCzpToWithdraw,
+                minOtherTokenToWithdraw
+            );
 
-                toast({
-                    position: "bottom",
-                    status: "success",
-                    title: "Liquidity withdrawn"
-                });
-                setPairSelected(null);
-                setMinCzpToWithdraw("");
-                setMinOtherTokenToWithdraw("");
-                setLiquidityToWithdraw("");
-            } catch (e: any) {
-                toast({
-                    position: "bottom",
-                    status: "error",
-                    title: e?.message || "Unexpected error! Please try again."
-                });
-            } finally {
-                setLiquidityWithdrawProgress(false);
-            }
+            setPairSelected(null);
+            setMinCzpToWithdraw("");
+            setMinOtherTokenToWithdraw("");
+            setLiquidityToWithdraw("");
+
+            setLiquidityWithdrawProgress(false);
         }
-    }, [toast, pairSelected, liquidityToWithdraw, minCzpToWithdraw, minOtherTokenToWithdraw]);
+    }, [pairSelected, liquidityToWithdraw, minCzpToWithdraw, minOtherTokenToWithdraw]);
 
     return {
         handleBuyCzp,
