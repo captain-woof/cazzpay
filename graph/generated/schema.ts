@@ -166,12 +166,20 @@ export class PurchaseTransaction extends Entity {
     this.set("confirmed", Value.fromBoolean(value));
   }
 
-  get timestampOfConfirmation(): BigInt {
+  get timestampOfConfirmation(): BigInt | null {
     let value = this.get("timestampOfConfirmation");
-    return value!.toBigInt();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
   }
 
-  set timestampOfConfirmation(value: BigInt) {
-    this.set("timestampOfConfirmation", Value.fromBigInt(value));
+  set timestampOfConfirmation(value: BigInt | null) {
+    if (!value) {
+      this.unset("timestampOfConfirmation");
+    } else {
+      this.set("timestampOfConfirmation", Value.fromBigInt(<BigInt>value));
+    }
   }
 }
