@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import paypal from './reducers/paypal';
+import walletConnectionReducer from './reducers/connection';
 
 export const store = configureStore({
     reducer: {
-        paypal: paypal
+        paypal: paypal,
+        walletConnection: walletConnectionReducer
     },
 })
 

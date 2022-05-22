@@ -1,0 +1,16 @@
+.react-paginate-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@media (min-width: 48em) {
+    .react-paginate-container {
+        justify-content: flex-end;
+    }
+}
+
+.react-paginate-container>li {
+    list-style: none;
+}

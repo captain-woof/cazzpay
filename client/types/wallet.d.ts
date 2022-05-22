@@ -1,0 +1,1 @@
+export type WalletsSupported = "injected" | "metamask" | "wallet-connect" | "wallet-link";

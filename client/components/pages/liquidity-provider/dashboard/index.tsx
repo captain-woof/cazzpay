@@ -1,0 +1,2 @@
+import LiquidityProviderDashboardPage from "./liquidityProviderDashboard";
+export default LiquidityProviderDashboardPage;
