@@ -4,7 +4,6 @@ import { Dispatch, SetStateAction } from "react";
 import { UniswapPair, UniswapPairInfo } from "../../../../types/pair";
 import BN from "bignumber.js";
 import useWalletConnection from "../../../../hooks/useWalletConnection";
-import { IoWallet as WalletIcon } from "react-icons/io5";
 import { MdSend as SendIcon } from "react-icons/md";
 
 interface IPairDialog {
@@ -39,10 +38,10 @@ interface IPairDialog {
 export default function PairDialog({ pairDialogVisible, pairSelected, setPairSelected, pairInfo, pairInfoProgress, liquidityToWithdraw, minCzpToWithdraw, minOtherTokenToWithdraw, setLiquidityToWithdraw, setMinCzpToWithdraw, setMinOtherTokenToWithdraw, handleWithdrawLiquidity, liquidityWithdrawProgress, czpPriceAtomic, czpToDeposit, czpToDepositSlippage, otherTokenPriceAtomic, otherTokenToDeposit, otherTokenToDepositSlippage, setCzpToDeposit, setCzpToDepositSlippage, setOtherTokenToDeposit, setOtherTokenToDepositSlippage, addLiquidityProgress, setWhatChanged, handleAddLiquidity }: IPairDialog) {
 
     // For Wallet connection
-    const { isConnected, isConnecting, showConnectDialog, disconnect } = useWalletConnection();
+    const { isConnected } = useWalletConnection();
 
     return (
-        <Modal isOpen={pairDialogVisible} onClose={() => {
+        <Modal isCentered={!isConnected} isOpen={pairDialogVisible} onClose={() => {
             setPairSelected(null);
         }}>
 
@@ -56,7 +55,7 @@ export default function PairDialog({ pairDialogVisible, pairSelected, setPairSel
                 {/* Close button */}
                 <ModalCloseButton />
 
-                {pairInfoProgress ? <Spinner colorScheme="blue" /> :
+                {pairInfoProgress ? <Spinner color="blue.400" position="absolute" size="xl" top="50%" left="50%" translateX="-50%" translateY="-50%" zIndex={10} thickness='4px' speed='0.65s' emptyColor='gray.200' /> :
                     <>
                         {/* Pair info */}
                         <Grid templateColumns="repeat(2, 1fr)">
@@ -70,8 +69,10 @@ export default function PairDialog({ pairDialogVisible, pairSelected, setPairSel
                                 <Heading fontSize="xl">{pairSelected?.otherTokenName}</Heading>
 
                                 {/* Liquidity provided / Reserve */}
-                                <Text marginTop={2}>
-                                    {ethers.utils.formatUnits(pairInfo?.liquidityOtherTokenAtomic || "0", pairSelected?.otherTokenDecimals)} / {ethers.utils.formatUnits(pairInfo?.reserveOtherTokenAtomic || "0", pairSelected?.otherTokenDecimals)} ({(new BN(pairInfo?.liquidityOtherTokenAtomic || "0").div(pairInfo?.reserveOtherTokenAtomic || "1").multipliedBy(100).toFixed(2))}%)
+                                <Text marginTop={2} fontSize="sm" textAlign="center">
+                                    {(new BN(ethers.utils.formatUnits(pairInfo?.liquidityOtherTokenAtomic || "0", pairSelected?.otherTokenDecimals))).toFixed(3)} / {(new BN(ethers.utils.formatUnits(pairInfo?.reserveOtherTokenAtomic || "0", pairSelected?.otherTokenDecimals))).toFixed(3)}
+                                    <br/>
+                                    ({(new BN(pairInfo?.liquidityOtherTokenAtomic || "0").div(pairInfo?.reserveOtherTokenAtomic || "1").multipliedBy(100).toFixed(2))}%)
                                 </Text>
                                 <Text fontSize="sm" fontWeight={500} color="gray.500">
                                     (Your share / Reserve)
@@ -87,19 +88,16 @@ export default function PairDialog({ pairDialogVisible, pairSelected, setPairSel
                                 <Heading fontSize="xl">CazzPay Token</Heading>
 
                                 {/* Liquidity provided / Reserve */}
-                                <Text marginTop={2}>
-                                    {ethers.utils.formatUnits(pairInfo?.liquidityCzp || "0", 18)} / {ethers.utils.formatUnits(pairInfo?.reserveCzpAtomic || "0", 18)} ({(new BN(pairInfo?.liquidityCzp || "0").div(pairInfo?.reserveCzpAtomic || "1").multipliedBy(100).toFixed(2))}%)
+                                <Text marginTop={2} fontSize="sm" textAlign="center">
+                                    {(new BN(ethers.utils.formatUnits(pairInfo?.liquidityCzp || "0", 18))).toFixed(3)} / {(new BN(ethers.utils.formatUnits(pairInfo?.reserveCzpAtomic || "0", 18))).toFixed(3)}
+                                    <br/>
+                                    ({(new BN(pairInfo?.liquidityCzp || "0").div(pairInfo?.reserveCzpAtomic || "1").multipliedBy(100).toFixed(2))}%)
                                 </Text>
                                 <Text fontSize="sm" fontWeight={500} color="gray.500">
                                     (Your share / Reserve)
                                 </Text>
                             </Flex>
                         </Grid>
-
-                        {/* Connect wallet button */}
-                        <Button marginTop={4} isLoading={isConnecting} loadingText="Connecting" onClick={!isConnected ? showConnectDialog : disconnect} display="flex" marginX="auto" rightIcon={<WalletIcon size={24} />} colorScheme="blue" variant="outline">
-                            {isConnected ? "Connected" : "Connect wallet"}
-                        </Button>
 
                         {/* Tabs - deposit/withdraw liquidity */}
                         <Tabs isFitted marginTop={4} paddingX="6">

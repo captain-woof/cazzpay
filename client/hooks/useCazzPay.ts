@@ -6,7 +6,7 @@ import CazzPayTokenArtifact from "../contracts/CazzPayToken.json";
 import { CazzPay, CazzPayToken, ERC20 } from "../typechain";
 import { WrapperBuilder } from "redstone-evm-connector";
 import { AddedLiquidityToCzpAndOtherTokenPairEvent, BoughtWithCryptoEvent, CreatedPairWithCzpAndOtherTokenEvent, TokensSwappedEvent, WithdrawnLiquidityFromCzpAndOtherTokenPairEvent } from "../typechain/CazzPay";
-import { UniswapPair, UniswapV2PairContract } from "../types/pair";
+import { UniswapPair, UniswapPairInfo, UniswapV2PairContract } from "../types/pair";
 import UniswapPairArtifact from "@uniswap/v2-core/build/UniswapV2Pair.json";
 import ERC20Artifact from "@uniswap/v2-core/build/ERC20.json";
 import BN from "bignumber.js";
@@ -187,22 +187,30 @@ export const useCazzPay = () => {
 
     const getCzpAndOtherTokenPair = useCallback(async (
         otherTokenAddress: string
-    ) => {
-        if (!!cazzPayContract) {
-            const pairAddr = await cazzPayContract.getCzpAndOtherTokenPairAddr(otherTokenAddress);
+    ): Promise<(UniswapPair & UniswapPairInfo) | undefined> => {
+        if (!!cazzPayContractConnected) {
+            const pairAddr = await cazzPayContractConnected.getCzpAndOtherTokenPairAddr(otherTokenAddress);
 
             const pairContract = new ethers.Contract(pairAddr, UniswapPairArtifact.abi, providerWrapped) as UniswapV2PairContract;
 
             // Get other token address
-            const [token0Addr, token1Addr] = await Promise.all([
+            const [token0Addr, token1Addr, reserves, liquidity, liquidityTotal] = await Promise.all([
                 pairContract.token0(),
-                pairContract.token1()
+                pairContract.token1(),
+                pairContract.getReserves(),
+                pairContract.balanceOf(await cazzPayContractConnected.signer.getAddress()),
+                pairContract.totalSupply()
             ]);
-            let otherTokenAddr;
-            if (token0Addr.toLowerCase() === process.env.NEXT_PUBLIC_CZP_CONTRACT_ADDR) {
-                otherTokenAddr = token0Addr;
-            } else {
+
+            let otherTokenAddr: string, otherTokenReserve: BigNumber, czpReserve: BigNumber;
+            if (token0Addr.toLowerCase() === process.env.NEXT_PUBLIC_CZP_CONTRACT_ADDR?.toLowerCase()) {
                 otherTokenAddr = token1Addr;
+                otherTokenReserve = reserves._reserve1;
+                czpReserve = reserves._reserve0;
+            } else {
+                otherTokenAddr = token0Addr;
+                otherTokenReserve = reserves._reserve0;
+                czpReserve = reserves._reserve1;
             }
 
             // Get other token details
@@ -218,10 +226,21 @@ export const useCazzPay = () => {
                 otherTokenAddr,
                 otherTokenName,
                 otherTokenSymbol,
-                otherTokenDecimals
+                otherTokenDecimals,
+                liquidityAtomic: liquidity.toString(),
+                liquidityCzp: (new BN(liquidity.toString()))
+                    .div(liquidityTotal.toString())
+                    .multipliedBy(czpReserve.toString())
+                    .toFixed(0),
+                liquidityOtherTokenAtomic: (new BN(liquidity.toString()))
+                    .div(liquidityTotal.toString())
+                    .multipliedBy(otherTokenReserve.toString())
+                    .toFixed(0),
+                reserveCzpAtomic: czpReserve.toString(),
+                reserveOtherTokenAtomic: otherTokenReserve.toString()
             }
         }
-    }, [cazzPayContract]);
+    }, [cazzPayContractConnected]);
 
     const getAllPairsAddrsWithCzpAndOtherToken = useCallback(async (
     ) => {
@@ -294,8 +313,14 @@ export const useCazzPay = () => {
                 const parsedOtherTokenMinAmount = getValDecreased(parsedOtherTokenAmount.toString(), otherTokenSlippagePerc);
 
                 // Approve tokens
-                await cazzPayTokenContractConnected.approve(cazzPayContractConnected.address, parsedCzpAmount);
-                await otherTokenContract.approve(cazzPayContractConnected.address, parsedOtherTokenAmount);
+                const [approveTxCazzPay, approveTxOtherToken] = await Promise.all([
+                    cazzPayTokenContractConnected.approve(cazzPayContractConnected.address, parsedCzpAmount),
+                    otherTokenContract.approve(cazzPayContractConnected.address, parsedOtherTokenAmount)
+                ]);
+                await Promise.all([
+                    approveTxCazzPay.wait(),
+                    approveTxOtherToken.wait()
+                ]);
 
                 // Perform transactions
                 const tx = await cazzPayContractConnected
@@ -358,7 +383,8 @@ export const useCazzPay = () => {
                 const parsedCzpMinAmount = getValDecreased(parsedCzpAmount.toString(), czpSlippagePerc);
                 const parsedEthMinAmount = getValDecreased(parsedEthAmount.toString(), ethSlippagePerc);
 
-                await cazzPayTokenContractConnected.approve(cazzPayContractConnected.address, parsedCzpAmount);
+                const approveTx = await cazzPayTokenContractConnected.approve(cazzPayContractConnected.address, parsedCzpAmount);
+                await approveTx.wait();
 
                 const tx = await cazzPayContractConnected
                     .addLiquidityToCzpAndEthPair(
@@ -408,7 +434,7 @@ export const useCazzPay = () => {
 
     const withdrawLiquidityForCzpAndOtherToken = useCallback(async (
         otherTokenAddress: string,
-        liquidityToWithdrawAtomic: BigNumber,
+        liquidityToWithdraw: string,
         minCzpToReceive: string,
         minOtherTokenToReceive: string
     ) => {
@@ -423,15 +449,17 @@ export const useCazzPay = () => {
                 const otherTokenContract = new ethers.Contract(otherTokenAddress, ERC20Artifact.abi, signer) as ERC20;
                 const minCzpToReceiveParsed = ethers.utils.parseEther(minCzpToReceive);
                 const minOtherTokenToReceiveParsed = ethers.utils.parseUnits(minOtherTokenToReceive, await otherTokenContract.decimals());
+                const liquidityToWithdrawParsed = ethers.utils.parseUnits(liquidityToWithdraw, 18);
 
                 // Approve liquidity transfer
-                await pairContract.approve(cazzPayContractConnected.address, liquidityToWithdrawAtomic);
+                const approveTx = await pairContract.approve(cazzPayContractConnected.address, liquidityToWithdrawParsed);
+                await approveTx.wait();
 
                 // Perform tx
                 const tx = await cazzPayContractConnected
                     .withdrawLiquidityForCzpAndOtherToken(
                         otherTokenAddress,
-                        liquidityToWithdrawAtomic,
+                        liquidityToWithdrawParsed,
                         minCzpToReceiveParsed,
                         minOtherTokenToReceiveParsed,
                         getDeadline()
@@ -453,8 +481,7 @@ export const useCazzPay = () => {
                 return {
                     czpAmtWithdrawn,
                     otherTokenAmtWithdrawn,
-                    liquidityTokensSubmitted,
-                    withdrawLiquidityForCzpAndOtherToken
+                    liquidityTokensSubmitted
                 };
             } catch (e: any) {
                 toast({
@@ -468,7 +495,7 @@ export const useCazzPay = () => {
     }, [cazzPayContractConnected, signer, toast]);
 
     const withdrawLiquidityForCzpAndEth = useCallback(async (
-        liquidityToWithdrawAtomic: BigNumber,
+        liquidityToWithdraw: string,
         minCzpToReceive: string,
         minEthToReceive: string
     ) => {
@@ -481,14 +508,16 @@ export const useCazzPay = () => {
                 const pairContract = new ethers.Contract(pairTokenAddress, UniswapPairArtifact.abi, signer) as UniswapV2PairContract;
                 const minCzpToReceiveParsed = ethers.utils.parseEther(minCzpToReceive);
                 const minEthToReceiveParsed = ethers.utils.parseEther(minEthToReceive);
+                const liquidityToWithdrawParsed = ethers.utils.parseUnits(liquidityToWithdraw, 18);
 
                 // Approve liquidity transfer
-                await pairContract.approve(cazzPayContractConnected.address, liquidityToWithdrawAtomic);
+                const approveTx = await pairContract.approve(cazzPayContractConnected.address, liquidityToWithdrawParsed);
+                await approveTx.wait();
 
                 // Perform transaction
                 const tx = await cazzPayContractConnected
                     .withdrawLiquidityForCzpAndEth(
-                        liquidityToWithdrawAtomic,
+                        liquidityToWithdrawParsed,
                         minCzpToReceiveParsed,
                         minEthToReceiveParsed,
                         getDeadline()
@@ -718,7 +747,8 @@ export const useCazzPay = () => {
                 const czpAmtToGetMinParsed = getValDecreased(ethers.utils.parseEther(czpToGet).toString(), czpSlippagePerc);
 
                 // Approve token transfer
-                otherTokenContract.connect(signer).approve(cazzPayContractConnected.address, otherTokenAmtToSwapParsed);
+                const approveTx = await otherTokenContract.connect(signer).approve(cazzPayContractConnected.address, otherTokenAmtToSwapParsed);
+                await approveTx.wait();
 
                 // Perform transaction
                 const tx = await cazzPayContractConnected.swapOtherTokensForCzp(
@@ -775,7 +805,8 @@ export const useCazzPay = () => {
                 const czpAmtToSwapParsed = ethers.utils.parseEther(czpAmtToSwap);
 
                 // Approve CZP transfer
-                await cazzPayTokenContractConnected.approve(cazzPayContractConnected.address, czpAmtToSwapParsed);
+                const approveTx = await cazzPayTokenContractConnected.approve(cazzPayContractConnected.address, czpAmtToSwapParsed);
+                await approveTx.wait();
 
                 // Perform transaction
                 const tx = await cazzPayContractConnected.swapCzpForOtherTokens(
@@ -848,6 +879,7 @@ export const useCazzPay = () => {
         getAllPairsWithCzpAndOtherToken,
         addLiquidityToCzpAndOtherTokenPair,
         addLiquidityToCzpAndEthPair,
+        withdrawLiquidityForCzpAndOtherToken,
         withdrawLiquidityForCzpAndEth,
         buyWithCryptoToken,
         buyWithEth,

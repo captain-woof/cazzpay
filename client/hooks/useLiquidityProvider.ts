@@ -1,9 +1,12 @@
 import { useToast } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react"
-import { UniswapPair, UniswapPairInfo } from "../types/pair";
+import { UniswapPair, UniswapPairInfo, UniswapV2PairContract } from "../types/pair";
 import { usePaypal } from "./usePaypal";
 import useWalletConnection from "./useWalletConnection";
 import BN from "bignumber.js";
+import { useCazzPay } from "./useCazzPay";
+import UniswapPairArtifact from "@uniswap/v2-core/build/UniswapV2Pair.json";
+import { ethers } from "ethers";
 
 export const useLiquidityProvider = () => {
 
@@ -14,7 +17,10 @@ export const useLiquidityProvider = () => {
     const { paypalState } = usePaypal();
 
     // For wallet connection
-    const { isConnected } = useWalletConnection();
+    const { isConnected, providerWrapped } = useWalletConnection();
+
+    // For CazzPay
+    const { getCzpAndOtherTokenPair, getPriceOfTokenWithSymbol, withdrawLiquidityForCzpAndOtherToken, addLiquidityToCzpAndOtherTokenPair } = useCazzPay();
 
 
     ////////////////////////
@@ -115,48 +121,65 @@ export const useLiquidityProvider = () => {
 
     // Update pair display information when a pair is selected
     useEffect(() => {
-        if (!!pairSelected) {
-            // TODO: FETCH PAIR INFO FROM ADDR
-            try {
-                setPairInfoProgress(true);
+        (async () => {
+            if (!!pairSelected && isConnected) {
+                try {
+                    setPairInfoProgress(true);
 
-                setPairInfo({
-                    liquidityAtomic: "100000000000000000000",
-                    liquidityCzp: "100000000000000000000",
-                    liquidityOtherTokenAtomic: "10000000000000000000",
-                    reserveCzpAtomic: "1000000000000000000000",
-                    reserveOtherTokenAtomic: "230000000000000000000"
-                });
-            } catch {
-
-            } finally {
-                setPairInfoProgress(false);
+                    // Get pair details
+                    const details = await getCzpAndOtherTokenPair(pairSelected.otherTokenAddr);
+                    setPairInfo({
+                        liquidityAtomic: details?.liquidityAtomic || "0",
+                        liquidityCzp: details?.liquidityCzp || "0",
+                        liquidityOtherTokenAtomic: details?.liquidityOtherTokenAtomic || "0",
+                        reserveCzpAtomic: details?.reserveCzpAtomic || "0",
+                        reserveOtherTokenAtomic: details?.reserveOtherTokenAtomic || "0"
+                    });
+                } catch (e) {
+                    console.error(e);
+                    toast({
+                        status: "error",
+                        position: "bottom",
+                        title: "Could not fetch pair details"
+                    });
+                } finally {
+                    setPairInfoProgress(false);
+                }
             }
-        }
-    }, [pairSelected]);
+        })()
+    }, [pairSelected, isConnected]);
 
     // For token price update
     const [priceUpdateTimer, setPriceUpdateTimer] = useState<NodeJS.Timer>();
     useEffect(() => {
-        if (isConnected && !!pairSelected) {
+        (async () => {
+            if (isConnected && !!pairSelected) {
 
-            // Clear previous timer
-            !!priceUpdateTimer && clearInterval(priceUpdateTimer);
+                // Clear previous timer
+                !!priceUpdateTimer && clearInterval(priceUpdateTimer);
 
-            // TODO: Update price now
-            setCzpPriceAtomic("10000000000000000000");
-            setOtherTokenPriceAtomic("1000000000000000000000");
+                //Update price now
+                const [newCzpPriceAtomic, newOtherTokenPriceAtomic] = await Promise.all([
+                    getPriceOfTokenWithSymbol("CZP"),
+                    getPriceOfTokenWithSymbol(pairSelected.otherTokenSymbol)
+                ]);
+                setCzpPriceAtomic(newCzpPriceAtomic?.toString() || "0");
+                setOtherTokenPriceAtomic(newOtherTokenPriceAtomic?.toString() || "0");
 
-            // Set timer to keep updating price
-            const newPriceUpdateTimer = setInterval(() => {
-                // TODO: FETCH TOKEN PRICE
-                setCzpPriceAtomic("10000000000000000000");
-                setOtherTokenPriceAtomic("1000000000000000000000");
-            }, 10 * 1000);
-            setPriceUpdateTimer(newPriceUpdateTimer);
+                /*// Set timer to keep updating price
+                const newPriceUpdateTimer = setInterval(async () => {
+                    const [newCzpPriceAtomic, newOtherTokenPriceAtomic] = await Promise.all([
+                        getPriceOfTokenWithSymbol("CZP"),
+                        getPriceOfTokenWithSymbol(pairSelected.otherTokenSymbol)
+                    ]);
+                    setCzpPriceAtomic(newCzpPriceAtomic?.toString() || "0");
+                    setOtherTokenPriceAtomic(newOtherTokenPriceAtomic?.toString() || "0");
+                }, 10 * 1000);
+                setPriceUpdateTimer(newPriceUpdateTimer);
 
-            return () => { clearInterval(newPriceUpdateTimer); }
-        }
+                return () => { clearInterval(newPriceUpdateTimer); }*/
+            }
+        })();
     }, [pairSelected, isConnected]);
 
     // For CZP amt calculation
@@ -187,60 +210,62 @@ export const useLiquidityProvider = () => {
 
     // Function to add liquidity
     const handleAddLiquidity = useCallback(async () => {
-        try {
+        if (!!pairSelected) {
             setAddLiquidityProgress(true);
 
-            //TODO: WITHDRAW LIQUIDITY
-            window?.alert("TODO: ADD LIQUIDITY");
+            // ADD LIQUDITY
+            await addLiquidityToCzpAndOtherTokenPair(
+                pairSelected.otherTokenAddr,
+                czpToDeposit,
+                otherTokenToDeposit,
+                czpToDepositSlippage,
+                otherTokenToDepositSlippage
+            );
 
-            toast({
-                position: "bottom",
-                status: "success",
-                title: "Liquidity added"
-            });
             setPairSelected(null);
             setCzpToDeposit("0");
             setOtherTokenToDeposit("0");
             setCzpToDepositSlippage("0");
             setOtherTokenToDepositSlippage("0");
-        } catch (e: any) {
-            toast({
-                position: "bottom",
-                status: "error",
-                title: e?.message || "Unexpected error! Please try again."
-            });
-        } finally {
+
             setAddLiquidityProgress(false);
         }
-    }, [toast]);
+    }, [pairSelected, czpToDeposit, otherTokenToDeposit, czpToDepositSlippage, otherTokenToDepositSlippage]);
 
     // Function to withdraw liquidity
     const handleWithdrawLiquidity = useCallback(async () => {
-        try {
-            setLiquidityWithdrawProgress(true);
+        if (!!pairSelected) {
+            try {
+                setLiquidityWithdrawProgress(true);
 
-            //TODO: WITHDRAW LIQUIDITY
-            window?.alert("TODO: WITHDRAW LIQUIDITY");
+                // WITHDRAW LIQUIDITY
+                await withdrawLiquidityForCzpAndOtherToken(
+                    pairSelected.otherTokenAddr,
+                    liquidityToWithdraw,
+                    minCzpToWithdraw,
+                    minOtherTokenToWithdraw
+                );
 
-            toast({
-                position: "bottom",
-                status: "success",
-                title: "Liquidity withdrawn"
-            });
-            setPairSelected(null);
-            setMinCzpToWithdraw("");
-            setMinOtherTokenToWithdraw("");
-            setLiquidityToWithdraw("");
-        } catch (e: any) {
-            toast({
-                position: "bottom",
-                status: "error",
-                title: e?.message || "Unexpected error! Please try again."
-            });
-        } finally {
-            setLiquidityWithdrawProgress(false);
+                toast({
+                    position: "bottom",
+                    status: "success",
+                    title: "Liquidity withdrawn"
+                });
+                setPairSelected(null);
+                setMinCzpToWithdraw("");
+                setMinOtherTokenToWithdraw("");
+                setLiquidityToWithdraw("");
+            } catch (e: any) {
+                toast({
+                    position: "bottom",
+                    status: "error",
+                    title: e?.message || "Unexpected error! Please try again."
+                });
+            } finally {
+                setLiquidityWithdrawProgress(false);
+            }
         }
-    }, [toast]);
+    }, [toast, pairSelected, liquidityToWithdraw, minCzpToWithdraw, minOtherTokenToWithdraw]);
 
     return {
         handleBuyCzp,
