@@ -7,8 +7,12 @@ import { AiOutlineLogin as LoginIcon } from "react-icons/ai";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { usePaypal } from "../../../hooks/usePaypal";
+import { useRouter } from "next/router";
 
 export default function AppBar() {
+
+    // For router
+    const router = useRouter();
 
     // For tracking first render
     const [isFirstRendered, setIsFirstRendered] = useState<boolean>(false);
@@ -31,10 +35,10 @@ export default function AppBar() {
 
     // Handle logout
     const handleLogout = useCallback(() => {
-        window.alert("TODO: HANDLE LOGOUT");
         setPaypalLoggedInState(false);
         setPaypalUserInfo(null);
-    }, []);
+        router.push("/");
+    }, [router]);
 
     // Theme
     const theme = useTheme();

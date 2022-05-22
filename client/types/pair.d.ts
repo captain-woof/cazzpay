@@ -1,3 +1,4 @@
+import { BigNumber } from "ethers";
 import { ERC20 } from "../typechain";
 
 export interface UniswapPair {
@@ -19,4 +20,8 @@ export interface UniswapPairInfo {
 export interface UniswapV2PairContract extends ERC20 {
     token0: () => Promise<string>;
     token1: () => Promise<string>;
+    getReserves: () => Promise<{
+        _reserve0: BigNumber;
+        _reserve1: BigNumber;
+    }>;
 }

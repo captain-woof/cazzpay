@@ -51,12 +51,11 @@ export const getAllPairsWithCzpAndOtherToken = async () => {
         pairContract.token1(),
       ]);
       let otherTokenAddr;
-      if (
-        token0Addr.toLowerCase() === process.env.NEXT_PUBLIC_CZP_CONTRACT_ADDR
-      ) {
-        otherTokenAddr = token0Addr;
-      } else {
+
+      if (token0Addr.toLowerCase() === process.env.NEXT_PUBLIC_CZP_CONTRACT_ADDR?.toLowerCase()) {
         otherTokenAddr = token1Addr;
+      } else {
+        otherTokenAddr = token0Addr;
       }
 
       // Get other token details
@@ -119,36 +118,32 @@ export const storeSellerInfo = async (
  * @param cazzPayTransactionId CazzPay transaction id of the transaction to set as confirmed
  */
 export const setPurchaseConfirmation = async (cazzPayTransactionId: string) => {
-  const transaction = await getTransactionById(cazzPayTransactionId);
+    const transaction = await getTransactionById(cazzPayTransactionId);
 
-  // Proceed only if transaction is unconfirmed
-  if (
-    !!transaction &&
-    transaction.confirmed === false &&
-    "fiatAmountToPayToSeller" in transaction
-  ) {
-    try {
-      const sellerToPay = transaction.recipientSeller;
-      const amtToPayToSeller = ethers.utils.formatUnits(
-        transaction.fiatAmountToPayToSeller?.toString() as string,
-        16
-      );
-      // TODO (Rajarshi): PAY TO SELLER WITH THE AMOUNT FOUND ABOVE
-      try {
-        const payId = await sendMoneyToSeller(amtToPayToSeller, sellerToPay.id);
-      } catch (e: any) {
-        throw new Error(e?.message || "Money Cannot be sent");
-      }
+    // Proceed only if transaction is unconfirmed
+    if (!!transaction && transaction.confirmed === false && "fiatAmountToPayToSeller" in transaction) {
+        try {
+            const sellerToPay = transaction.recipientSeller;
+            const amtToPayToSeller = ethers.utils.formatUnits(
+                transaction.fiatAmountToPayToSeller?.toString() as string,
+                16
+            );
 
-      // Confirm payment on contract only if the above operation succeeds
-      const tx = await cazzPayContract.setPurchaseConfirmation(
-        cazzPayTransactionId
-      );
-      await tx.wait();
-    } catch (e: any) {
-      throw Error(e?.message || "Purchase could not be verified!");
+            // Pay seller with FIAT
+            const payId = await sendMoneyToSeller(amtToPayToSeller, sellerToPay.id);
+
+            // Confirm payment on contract only if the above operation succeeds
+            const tx = await cazzPayContract.setPurchaseConfirmation(
+                cazzPayTransactionId
+            );
+            await tx.wait();
+
+        } catch (e: any) {
+            throw Error(e?.message || "Purchase could not be verified!");
+        }
+    } else {
+        throw Error("Transaction awaiting indexing!");
     }
-  }
 };
 
 /**
