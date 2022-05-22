@@ -12,7 +12,7 @@ This repo contains all the code that runs CazzPay - all smart contracts, subgrap
 
 - [TestCoin ($TST)](https://rinkeby.etherscan.io/address/0x6A308Fb8391Cecd7bb9570840239956f25C101F9) - **0x6A308Fb8391Cecd7bb9570840239956f25C101F9**
 - [CazzPayToken ($CZP)](https://rinkeby.etherscan.io/address/0x8d7b5E919620D2C9742389bc1CeC671eaB0E3150) - **0x8d7b5E919620D2C9742389bc1CeC671eaB0E3150**
-- [CazzPay](https://rinkeby.etherscan.io/address/0x9753bC5c6C2ed1F0E1299c1c978425AC8C3adcd0) - **0x9753bC5c6C2ed1F0E1299c1c978425AC8C3adcd0**
+- [CazzPay](https://rinkeby.etherscan.io/address/0xDBbD3EF86b6F1a250f542F21362FeA46c28F037c) - **0xDBbD3EF86b6F1a250f542F21362FeA46c28F037c**
 
 ## CazzPay graph
 
