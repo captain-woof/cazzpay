@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(200).json(tokenDetails);
     } catch (e: any) {
         res
-            .status(e?.message === "Seller already exists with same info!" ? 200 : 500)
+            .status(500)
             .send(e?.message || "Request could not be processed!");
     }
 }

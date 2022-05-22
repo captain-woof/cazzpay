@@ -24,8 +24,13 @@ export const useTransactionsTable = () => {
     // To store transactions
     const [transactionsReceived, setSransactionsReceived] = useState<Array<TransactionExtended>>([]);
 
+    // To store if table is being updated
+    const [isTableBeingUpdated, setIsTableBeingUpdated] = useState<boolean>(false);
+
     // Function to update table rows
     const updateTableData = useCallback(async (pageNum: number) => {
+        setIsTableBeingUpdated(true);
+        
         const totalTransactionsNumResp = await axios.get("/api/sellers/getTotalTransactionsNum", {
             params: {
                 id: paypalState?.userInfo?.id
@@ -74,6 +79,7 @@ export const useTransactionsTable = () => {
         }
 
         setSransactionsReceived(allTransactionsExtended);
+        setIsTableBeingUpdated(false);
     }, [paypalState?.userInfo]);
 
     // Update data periodically if needed
@@ -110,6 +116,7 @@ export const useTransactionsTable = () => {
         transactionsReceived,
         totalPages,
         setPage,
-        page
+        page,
+        isTableBeingUpdated
     }
 }

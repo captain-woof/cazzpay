@@ -1,4 +1,4 @@
-import { Button, ButtonProps, Flex, FormControl, FormHelperText, FormLabel, Heading, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text, Tooltip } from "@chakra-ui/react";
+import { Button, ButtonProps, FormControl, FormHelperText, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text, Tooltip } from "@chakra-ui/react";
 import { BsCoin as BuyCzpIcon } from "react-icons/bs";
 import { GiTwoCoins as CoinIcon } from "react-icons/gi";
 import { useLiquidityProvider } from "../../../../hooks/useLiquidityProvider";

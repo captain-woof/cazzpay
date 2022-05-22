@@ -101,7 +101,7 @@ export const listOfSellers = async (): Promise<Array<Seller>> => {
  */
 export const getTransactionById = async (cazzPayTransactionId: string) => {
   const response = await axios.post(graphEndpoint, {
-    query: `
+    query: `{
       purchaseTransaction(id: ${cazzPayTransactionId}) {
         id
         payerWalletAddr
@@ -119,6 +119,10 @@ export const getTransactionById = async (cazzPayTransactionId: string) => {
       }
     }`,
   });
-  const transaction: Transaction = response.data.data.seller.purchaseTransaction;
-  return transaction;
+
+  if (!!response.data.data) {
+    const transaction: Transaction = response.data.data.purchaseTransaction;
+    return transaction;
+  }
+  return null;
 };

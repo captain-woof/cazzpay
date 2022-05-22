@@ -6,29 +6,35 @@ import {
     getCustomerData,
 } from "../../lib/paypal";
 
+const emptyProps = {
+    props: {
+        userData: {
+            name: "",
+            email: "",
+            paypalId: ""
+        }
+    }
+}
+
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
     const query: ParsedUrlQuery = context.query;
 
     if ("code" in query) {
-        const authCode: string = query.code as string;
-        const token: PayPalToken = await generateAccessTokenForCustomer(authCode);
-        const userData: PaypalProfile = await getCustomerData(token.accessToken);
+        try {
+            const authCode: string = query.code as string;
+            const token: PayPalToken = await generateAccessTokenForCustomer(authCode);
+            const userData: PaypalProfile = await getCustomerData(token.accessToken);
 
-        return {
-            props: {
-                userData,
-            },
-        };
+            return {
+                props: {
+                    userData,
+                },
+            };
+        } catch {
+            return emptyProps;
+        }
     } else {
-        return {
-            props: {
-                userData: {
-                    name: "",
-                    email: "",
-                    paypalId: ""
-                }
-            },
-        };
+        return emptyProps;
     }
 };
 
