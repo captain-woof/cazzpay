@@ -137,7 +137,7 @@ export const useLiquidityProvider = () => {
                 setCzpPriceAtomic(newCzpPriceAtomic?.toString() || "0");
                 setOtherTokenPriceAtomic(newOtherTokenPriceAtomic?.toString() || "0");
 
-                /*// Set timer to keep updating price
+                // Set timer to keep updating price
                 const newPriceUpdateTimer = setInterval(async () => {
                     const [newCzpPriceAtomic, newOtherTokenPriceAtomic] = await Promise.all([
                         getPriceOfTokenWithSymbol("CZP"),
@@ -148,7 +148,7 @@ export const useLiquidityProvider = () => {
                 }, 10 * 1000);
                 setPriceUpdateTimer(newPriceUpdateTimer);
 
-                return () => { clearInterval(newPriceUpdateTimer); }*/
+                return () => { clearInterval(newPriceUpdateTimer); }
             }
         })();
     }, [pairSelected, isConnected]);

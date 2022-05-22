@@ -64,7 +64,7 @@ export const usePayWithCrypto = () => {
                 );
 
                 // Set timer to keep updating price
-                /*const newPriceUpdateTimer = setInterval(async () => {
+                const newPriceUpdateTimer = setInterval(async () => {
                     // FETCH TOKEN PRICE
                     setTokenSelectedForPaymentPriceAtomic(
                         (await getPriceOfTokenWithSymbol(pairSelectedForPayment.otherTokenSymbol))?.toString() || "0"
@@ -72,7 +72,7 @@ export const usePayWithCrypto = () => {
                 }, 10 * 1000);
                 setPriceUpdateTimer(newPriceUpdateTimer);
 
-                return () => { clearInterval(newPriceUpdateTimer); }*/
+                return () => { clearInterval(newPriceUpdateTimer); }
             }
         })()
     }, [pairSelectedForPayment, isConnected])
