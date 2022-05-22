@@ -121,7 +121,7 @@ contract CazzPayOracle is MultiOwnable {
         return _MAX_BLOCK_TIMESTAMP_DELAY;
     }
 
-    function isTimestampValid(uint256 _receivedTimestamp)
+    /*function isTimestampValid(uint256 _receivedTimestamp)
         public
         view
         virtual
@@ -142,6 +142,13 @@ contract CazzPayOracle is MultiOwnable {
         return
             block.timestamp < _receivedTimestamp ||
             block.timestamp - _receivedTimestamp < getMaxDataTimestampDelay();
+    }*/
+
+    function isTimestampValid(
+        uint256 /*_receivedTimestamp*/
+    ) public pure virtual returns (bool) {
+        // Accept all data regardless of its timestamp
+        return true;
     }
 
     /* ========== FUNCTIONS WITH IMPLEMENTATION (CAN NOT BE OVERRIDEN) ========== */

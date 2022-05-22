@@ -26,6 +26,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
     IERC20 public immutable wethContract;
     uint16 public paymentTransferFeesPerc; // This would be charged from seller when receiving payments; this number would be divided by 10000 before usage; e.g, for 0.01%, this value should be 1.
     Counters.Counter internal _cazzPayTransactionId;
+    address[] internal _allPairsWithCzpAndOtherToken;
 
     ////////////////////////
     // MODIFIERS
@@ -131,6 +132,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             _otherTokenContractAddr
         );
         require(pairAddr != address(0), "PAIR NOT CREATED");
+        _allPairsWithCzpAndOtherToken.push(pairAddr);
         emit CreatedPairWithCzpAndOtherToken(pairAddr, _otherTokenContractAddr);
     }
 
@@ -148,6 +150,7 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             address(wethContract)
         );
         require(pairAddr != address(0), "PAIR NOT CREATED");
+        _allPairsWithCzpAndOtherToken.push(pairAddr);
         emit CreatedPairWithCzpAndOtherToken(pairAddr, address(wethContract));
     }
 
@@ -177,25 +180,19 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         view
         returns (address[] memory pairAddrsWithCzpAndOtherToken)
     {
-        uint256 totalPairsNum = factoryContract.allPairsLength();
-        address[] memory pairAddrs = new address[](totalPairsNum);
+        return _allPairsWithCzpAndOtherToken;
+    }
 
-        uint256 index = 0;
-        IUniswapV2Pair pairContract;
-        for (uint256 i = 0; i < totalPairsNum; i++) {
-            pairContract = IUniswapV2Pair(factoryContract.allPairs(i));
-            if (
-                pairContract.token0() == address(czpContract) ||
-                pairContract.token1() == address(czpContract)
-            ) {
-                pairAddrs[index] = address(pairContract);
-                index += 1;
-            }
-        }
-
-        pairAddrsWithCzpAndOtherToken = new address[](index);
-        for (uint256 i = 0; i < totalPairsNum; i++) {
-            pairAddrsWithCzpAndOtherToken[i] = pairAddrs[i];
+    /**
+    @notice Manually adds pair addresses to this contract's storage
+    @notice Only owners can call this
+    @param _pairAddrsToManuallyAdd Array of pair addresses to add
+     */
+    function manuallyAddPairWithCzpAndOtherToken(
+        address[] calldata _pairAddrsToManuallyAdd
+    ) external onlyOwners {
+        for (uint256 i = 0; i < _pairAddrsToManuallyAdd.length; i++) {
+            _allPairsWithCzpAndOtherToken.push(_pairAddrsToManuallyAdd[i]);
         }
     }
 
@@ -229,6 +226,13 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             uint256 liquidityTokensMinted
         )
     {
+        // Check if pair exist. If not, the proceeding code would add it, so add it now to our list
+        address pairAddr = factoryContract.getPair(
+            address(czpContract),
+            _otherTokenContractAddr
+        );
+        bool isNewPair = pairAddr == address(0);
+
         // Transfer tokens to this contract
         czpContract.transferFrom(msg.sender, address(this), _czpAmtToDeposit);
         IERC20(_otherTokenContractAddr).transferFrom(
@@ -274,6 +278,16 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             );
         }
 
+        // Add pair to list if this is aa newly created pair
+        if (isNewPair) {
+            _allPairsWithCzpAndOtherToken.push(
+                factoryContract.getPair(
+                    address(czpContract),
+                    _otherTokenContractAddr
+                )
+            );
+        }
+
         // Fire event
         emit AddedLiquidityToCzpAndOtherTokenPair(
             _otherTokenContractAddr,
@@ -312,6 +326,13 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
             uint256 liquidityTokensMinted
         )
     {
+        // Check if pair exist. If not, the proceeding code would add it, so add it now to our list
+        address pairAddr = factoryContract.getPair(
+            address(czpContract),
+            address(wethContract)
+        );
+        bool isNewPair = pairAddr == address(0);
+
         // Transfer CZP to this contract
         czpContract.transferFrom(msg.sender, address(this), _czpAmtToDeposit);
 
@@ -333,6 +354,16 @@ contract CazzPay is MultiOwnable, CazzPayOracle {
         if (czpAmtAdded < _czpAmtToDeposit) {
             czpContract.approve(address(routerContract), 0);
             czpContract.transfer(msg.sender, _czpAmtToDeposit - czpAmtAdded);
+        }
+
+        // Add pair to list if this is aa newly created pair
+        if (isNewPair) {
+            _allPairsWithCzpAndOtherToken.push(
+                factoryContract.getPair(
+                    address(czpContract),
+                    address(wethContract)
+                )
+            );
         }
 
         // Fire event
