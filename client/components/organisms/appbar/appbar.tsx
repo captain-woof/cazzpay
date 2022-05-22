@@ -34,10 +34,10 @@ export default function AppBar() {
     const navbarBackgroundColor = useColorModeValue("gray.50", "gray.800");
 
     // Handle logout
-    const handleLogout = useCallback(() => {
+    const handleLogout = useCallback(async () => {
         setPaypalLoggedInState(false);
         setPaypalUserInfo(null);
-        router.push("/");
+        await router.push("/");
     }, [router]);
 
     // Theme
