@@ -188,7 +188,7 @@ export class CazzPayOracle extends BaseContract {
     ): Promise<[boolean]>;
 
     isTimestampValid(
-      _receivedTimestamp: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
@@ -232,7 +232,7 @@ export class CazzPayOracle extends BaseContract {
   ): Promise<boolean>;
 
   isTimestampValid(
-    _receivedTimestamp: BigNumberish,
+    arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -276,7 +276,7 @@ export class CazzPayOracle extends BaseContract {
     ): Promise<boolean>;
 
     isTimestampValid(
-      _receivedTimestamp: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -326,7 +326,7 @@ export class CazzPayOracle extends BaseContract {
     ): Promise<BigNumber>;
 
     isTimestampValid(
-      _receivedTimestamp: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -380,7 +380,7 @@ export class CazzPayOracle extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     isTimestampValid(
-      _receivedTimestamp: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

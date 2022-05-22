@@ -41,6 +41,7 @@ interface CazzPayInterface extends ethers.utils.Interface {
     "isOwner(address)": FunctionFragment;
     "isSignerAuthorized(address)": FunctionFragment;
     "isTimestampValid(uint256)": FunctionFragment;
+    "manuallyAddPairWithCzpAndOtherToken(address[])": FunctionFragment;
     "paymentTransferFeesPerc()": FunctionFragment;
     "removeOwner(address)": FunctionFragment;
     "routerContract()": FunctionFragment;
@@ -132,6 +133,10 @@ interface CazzPayInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "isTimestampValid",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "manuallyAddPairWithCzpAndOtherToken",
+    values: [string[]]
   ): string;
   encodeFunctionData(
     functionFragment: "paymentTransferFeesPerc",
@@ -245,6 +250,10 @@ interface CazzPayInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "isTimestampValid",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "manuallyAddPairWithCzpAndOtherToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -507,9 +516,14 @@ export class CazzPay extends BaseContract {
     ): Promise<[boolean]>;
 
     isTimestampValid(
-      _receivedTimestamp: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    manuallyAddPairWithCzpAndOtherToken(
+      _pairAddrsToManuallyAdd: string[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     paymentTransferFeesPerc(overrides?: CallOverrides): Promise<[number]>;
 
@@ -666,9 +680,14 @@ export class CazzPay extends BaseContract {
   ): Promise<boolean>;
 
   isTimestampValid(
-    _receivedTimestamp: BigNumberish,
+    arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
+
+  manuallyAddPairWithCzpAndOtherToken(
+    _pairAddrsToManuallyAdd: string[],
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   paymentTransferFeesPerc(overrides?: CallOverrides): Promise<number>;
 
@@ -847,9 +866,14 @@ export class CazzPay extends BaseContract {
     ): Promise<boolean>;
 
     isTimestampValid(
-      _receivedTimestamp: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    manuallyAddPairWithCzpAndOtherToken(
+      _pairAddrsToManuallyAdd: string[],
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     paymentTransferFeesPerc(overrides?: CallOverrides): Promise<number>;
 
@@ -1213,8 +1237,13 @@ export class CazzPay extends BaseContract {
     ): Promise<BigNumber>;
 
     isTimestampValid(
-      _receivedTimestamp: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    manuallyAddPairWithCzpAndOtherToken(
+      _pairAddrsToManuallyAdd: string[],
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     paymentTransferFeesPerc(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1384,8 +1413,13 @@ export class CazzPay extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     isTimestampValid(
-      _receivedTimestamp: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    manuallyAddPairWithCzpAndOtherToken(
+      _pairAddrsToManuallyAdd: string[],
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     paymentTransferFeesPerc(

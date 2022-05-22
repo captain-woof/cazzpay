@@ -10,6 +10,7 @@ import { providers as providersEthers } from "ethers";
 
 import "../styles/global.css";
 import "../styles/react-paginate.css";
+import "../styles/fonts.css";
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 
 /**
